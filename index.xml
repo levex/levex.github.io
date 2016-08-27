@@ -2,29 +2,29 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Programmers&#39; Tea Lounge</title>
-    <link>http://www.levex.github.io/</link>
+    <link>http://levex.github.io/</link>
     <description>Recent content on Programmers&#39; Tea Lounge</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 26 Aug 2016 23:35:17 -0700</lastBuildDate>
-    <atom:link href="http://www.levex.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://levex.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>about</title>
-      <link>http://www.levex.github.io/page/about/</link>
+      <link>http://levex.github.io/page/about/</link>
       <pubDate>Fri, 26 Aug 2016 23:35:17 -0700</pubDate>
       
-      <guid>http://www.levex.github.io/page/about/</guid>
+      <guid>http://levex.github.io/page/about/</guid>
       <description>&lt;p&gt;Hi.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Thoughts on Locks (Part I)</title>
-      <link>http://www.levex.github.io/post/the-problem-with-locks/</link>
+      <link>http://levex.github.io/post/the-problem-with-locks/</link>
       <pubDate>Fri, 26 Aug 2016 20:20:39 -0700</pubDate>
       
-      <guid>http://www.levex.github.io/post/the-problem-with-locks/</guid>
+      <guid>http://levex.github.io/post/the-problem-with-locks/</guid>
       <description>&lt;!--
 Table of Contents
 -----------------
@@ -161,10 +161,10 @@ benefits.&lt;/p&gt;
     
     <item>
       <title>Introduction</title>
-      <link>http://www.levex.github.io/post/first-post/</link>
+      <link>http://levex.github.io/post/first-post/</link>
       <pubDate>Fri, 26 Aug 2016 19:56:09 -0700</pubDate>
       
-      <guid>http://www.levex.github.io/post/first-post/</guid>
+      <guid>http://levex.github.io/post/first-post/</guid>
       <description>&lt;p&gt;Hello everyone.&lt;/p&gt;
 
 &lt;p&gt;My name is Levente Kurusa. I work on all kinds of low-level software and when
