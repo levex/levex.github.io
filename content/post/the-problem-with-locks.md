@@ -4,6 +4,21 @@ draft = true
 title = "Thoughts on Locks (Part I)"
 
 +++
+
+<!--
+Table of Contents
+-----------------
+
+1) Recursive Locks                     (this)
+2) seqlock_T
+3) rwlock_t
+4) RCU
+5) Software Transactional Memory
+6) Message-based approach
+7) Conclusion
+
+-->
+
 <!-- TODO: fix spaces between functions in code blocks -->
 In this article we will walk through some common mistakes with regards to
 locking and why <i>spinlock</i>s and <i>mutex</i>es suck in general. We will
