@@ -1,0 +1,12 @@
+baseurl = "http://www.levex.github.io/"
+languageCode = "en-us"
+title = "Programmers' Tea Lounge"
+
+[params]
+AuthorName = "Levente Kurusa"
+AuthorEmail = "levex@linux.com"
+Tagline = "Programming is my cup of tea"
+HomepagePosts = 3
+SocialLinks = true
+GithubUsername = "levex"
+TwitterUsername = "ilevex"
