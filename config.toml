@@ -5,7 +5,7 @@ title = "Programmers' Tea Lounge"
 [params]
 AuthorName = "Levente Kurusa"
 AuthorEmail = "levex@linux.com"
-Tagline = "Programming is my cup of tea"
+Tagline = "Concurrency, Haskell, C, low-level programming and my adventures into academia"
 HomepagePosts = 3
 SocialLinks = true
 GithubUsername = "levex"
