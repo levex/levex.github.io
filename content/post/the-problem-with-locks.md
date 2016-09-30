@@ -25,6 +25,7 @@ locking and why <i>spinlock</i>s and <i>mutex</i>es suck in general. We will
 discuss some alternatives and make a case for lock-less programming. Let's dive
 in, it's going to be interesting.
 <!--more-->
+<strong>Please note: This is a draft</strong><br /><br />
 Consider the following piece of simple code using Linux-kernel style locks:
 <pre><code class="c">void
 some_function()

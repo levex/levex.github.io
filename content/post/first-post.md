@@ -1,6 +1,6 @@
 +++
 date = "2016-08-26T19:56:09-07:00"
-draft = true
+draft = false
 title = "Introduction"
 
 +++
@@ -8,19 +8,18 @@ title = "Introduction"
 Hello everyone.
 
 My name is Levente Kurusa. I work on all kinds of low-level software and when
-I'm not I enjoy writing Haskell programs. This blog will serve as a brain dump
-and I'll be posting longer and shorter articles about everyday programming.
+I'm not I enjoy writing Haskell and Scheme. This blog will serve as a brain dump
+and I'll be posting shorter (sometimes longer) articles about everyday programming.
 <!--more-->
+Mostly about concurrency, parallelism and the occassional this-and-that. I am
+located in the Bay Area at the moment and always up to meet anyone interested
+to chat. I can sometimes also be found at conferences.
 
-This blog is named as is, because of the popular stereotype that programmers drink
-a lot of coffee. I don't drink a lot of coffee, though instead I drink a lot of tea.
-Maybe the stereotype should say programmers drink a lot, oh wait, that's something different
-and sad. Oh well..
+Right now, I'm working at Apple but returning to Imperial College London in
+October to do some research and focus on my side projects. I'll be posting
+about those later.
 
-Anyway, my jokes are terrible, but if you still are interested in meeting up,
-(I meet up with anyone interesting!) shoot me an email. I'm in the San Francisco Bay Area.
-
-As always, I'm reachable on Twitter at
+I also post (well, really, rant) on Twitter:
 <a href="http://twitter.com/iLevex">@ilevex</a>.
 
 ~ Lev

@@ -2,174 +2,34 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Programmers&#39; Tea Lounge</title>
-    <link>http://www.levex.github.io/post/</link>
+    <link>http://levex.github.io/post/</link>
     <description>Recent content in Posts on Programmers&#39; Tea Lounge</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 26 Aug 2016 20:20:39 -0700</lastBuildDate>
-    <atom:link href="http://www.levex.github.io/post/index.xml" rel="self" type="application/rss+xml" />
-    
-    <item>
-      <title>Thoughts on Locks (Part I)</title>
-      <link>http://www.levex.github.io/post/the-problem-with-locks/</link>
-      <pubDate>Fri, 26 Aug 2016 20:20:39 -0700</pubDate>
-      
-      <guid>http://www.levex.github.io/post/the-problem-with-locks/</guid>
-      <description>&lt;!--
-Table of Contents
------------------
-
-1) Recursive Locks                     (this)
-2) seqlock_T
-3) rwlock_t
-4) RCU
-5) Software Transactional Memory
-6) Message-based approach
-7) Conclusion
-
---&gt;
-
-&lt;!-- TODO: fix spaces between functions in code blocks --&gt;
-
-&lt;p&gt;In this article we will walk through some common mistakes with regards to
-locking and why &lt;i&gt;spinlock&lt;/i&gt;s and &lt;i&gt;mutex&lt;/i&gt;es suck in general. We will
-discuss some alternatives and make a case for lock-less programming. Let&amp;rsquo;s dive
-in, it&amp;rsquo;s going to be interesting.&lt;/p&gt;
-
-&lt;p&gt;Consider the following piece of simple code using Linux-kernel style locks:
-&lt;pre&gt;&lt;code class=&#34;c&#34;&gt;void
-some_function()
-{
-    spin_lock(&amp;amp;some_global_lock);
-    // some critical section magic
-    spin_unlock(&amp;amp;some_global_lock);
-    return;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/p&gt;
-
-&lt;p&gt;At first the code looks great, some structure is protected using a
-&lt;code&gt;spin_lock_t&lt;/code&gt;. However, there is a big problem. The said structure
-is locked via a global lock, namely &lt;code&gt;some_global_lock&lt;/code&gt;. What if
-the critical section inside the lock calls code that locks the lock again?
-You get a dreaded &lt;strong&gt;deadlock&lt;/strong&gt;, oh no!&lt;/p&gt;
-
-&lt;p&gt;The programmer comes up with a &amp;ldquo;brilliant&amp;rdquo; concept:
-&lt;pre&gt;&lt;code class=&#34;c&#34;&gt;void
-other_function()
-{
-    if(is_spin_locked(&amp;amp;some_global_lock))
-        spin_lock(&amp;amp;some_global_lock);
-    // another critical section
-    spin_unlock(&amp;amp;some_global_lock);
-    return;
-}
-&lt;/code&gt;&lt;/pre&gt;
-Can you spot the problem? How do you detect whether the lock was set when you
-entered the function in order to decide whether to unlock the spinlock or leave
-it alone? So, naturally the next thing that comes into mind is to increment
-some internal counter everytime &lt;code&gt;spin_lock&lt;/code&gt; is called by the same
-thread, and decrement it each time &lt;code&gt;spin_unlock&lt;/code&gt; is called. So, we
-arrive at this code:&lt;/p&gt;
-
-&lt;p&gt;&lt;pre&gt;&lt;code class=&#34;c&#34;&gt;void
-other_function()
-{
-    spin_lock(&amp;amp;some_global_lock);
-    // another critical section
-    spin_unlock(&amp;amp;some_global_lock);
-    return;
-}&lt;/p&gt;
-
-&lt;p&gt;void
-some_function()
-{
-    spin_lock(&amp;amp;some_global_lock);
-    // some critical magic
-    other_function();
-    spin_unlock(&amp;amp;some_global_lock);
-    return;
-}
-&lt;/code&gt;&lt;/pre&gt;
-Awesome, one may think! We can call both &lt;code&gt;other_function&lt;/code&gt; and
-&lt;code&gt;some_function&lt;/code&gt; without having to worry about locks! That&amp;rsquo;s epic!
-No. These are called &lt;i&gt;recursive locks&lt;/i&gt;. Please avoid them. They are wrong.
-Just no.&lt;/p&gt;
-
-&lt;p&gt;So, let&amp;rsquo;s discuss why the fact that using recursive locks is so bad. First and
-foremost, the most crucial in mutual exclusion is the ability to run most of
-the code in a parallel setting. Recursive locks do not encourage that. In fact,
-they encourage you to be lazy and just lock everything you need. That sort of
-encouragement essentially destroys what you wanted in the first place, that is
-your code won&amp;rsquo;t be parallel anymore. Instead, a well-behaved programmer would
-do the following:&lt;/p&gt;
-
-&lt;p&gt;&lt;pre&gt;&lt;code class=&#34;c&#34;&gt;void
-other_function_unsafe()
-{
-    // critical section
-}&lt;/p&gt;
-
-&lt;p&gt;void
-other_function()
-{
-    spin_lock(&amp;amp;some_global_lock);
-    other_function_unsafe();
-    spin_unlock(&amp;amp;some_global_lock);
-}&lt;/p&gt;
-
-&lt;p&gt;void
-some_function()
-{
-    spin_lock(&amp;amp;some_global_lock);
-    // some critical magic
-    other_function_unsafe();
-    spin_unlock(&amp;amp;some_global_lock);
-}
-&lt;/code&gt;&lt;/pre&gt;
-&amp;hellip; which is a much nicer solution. We have the critical section
-&lt;i&gt;thoughtfully&lt;/i&gt; separated, and if we happen to need the same code while
-under the same lock, we can reuse the code worry-free. This way of working
-helps you enforce one of the most critical rules of threaded-programming:
-&lt;i&gt;Keep critical sections as short as possible&lt;/i&gt;.&lt;/p&gt;
-
-&lt;p&gt;Our solution is still far from perfect. What if Programmer B came along and
-added a function call into &lt;code&gt;other_function_unsafe&lt;/code&gt;? This shouldn&amp;rsquo;t
-be a problem &lt;i&gt;per-se&lt;/i&gt;, but what if that function goes ridicolous and calls
-a dozen others? That would again violate the rule we proposed earlier, not to
-mention what if one of the functions that are called begins to sleep? This is a
-&lt;strong&gt;deadlock&lt;/strong&gt; waiting to strike. Even if we are lucky to avoid the
-deadlock, we still have to account for starvation of other threads waiting on
-this lock.&lt;/p&gt;
-
-&lt;p&gt;Obviously, the use of a global lock is a terrible practice as well, because
-probably you started using threads as a form to implement to concurrency, but
-using a single global lock does much damage to it, if not completely preventing
-it. In the next part, we will cover fine-grained locking and all of its
-benefits.&lt;/p&gt;
-</description>
-    </item>
+    <lastBuildDate>Fri, 26 Aug 2016 19:56:09 -0700</lastBuildDate>
+    <atom:link href="http://levex.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Introduction</title>
-      <link>http://www.levex.github.io/post/first-post/</link>
+      <link>http://levex.github.io/post/first-post/</link>
       <pubDate>Fri, 26 Aug 2016 19:56:09 -0700</pubDate>
       
-      <guid>http://www.levex.github.io/post/first-post/</guid>
+      <guid>http://levex.github.io/post/first-post/</guid>
       <description>&lt;p&gt;Hello everyone.&lt;/p&gt;
 
 &lt;p&gt;My name is Levente Kurusa. I work on all kinds of low-level software and when
-I&amp;rsquo;m not I enjoy writing Haskell programs. This blog will serve as a brain dump
-and I&amp;rsquo;ll be posting longer and shorter articles about everyday programming.&lt;/p&gt;
+I&amp;rsquo;m not I enjoy writing Haskell and Scheme. This blog will serve as a brain dump
+and I&amp;rsquo;ll be posting shorter (sometimes longer) articles about everyday programming.&lt;/p&gt;
 
-&lt;p&gt;This blog is named as is, because of the popular stereotype that programmers drink
-a lot of coffee. I don&amp;rsquo;t drink a lot of coffee, though instead I drink a lot of tea.
-Maybe the stereotype should say programmers drink a lot, oh wait, that&amp;rsquo;s something different
-and sad. Oh well..&lt;/p&gt;
+&lt;p&gt;Mostly about concurrency, parallelism and the occassional this-and-that. I am
+located in the Bay Area at the moment and always up to meet anyone interested
+to chat. I can sometimes also be found at conferences.&lt;/p&gt;
 
-&lt;p&gt;Anyway, my jokes are terrible, but if you still are interested in meeting up,
-(I meet up with anyone interesting!) shoot me an email. I&amp;rsquo;m in the San Francisco Bay Area.&lt;/p&gt;
+&lt;p&gt;Right now, I&amp;rsquo;m working at Apple but returning to Imperial College London in
+October to do some research and focus on my side projects. I&amp;rsquo;ll be posting
+about those later.&lt;/p&gt;
 
-&lt;p&gt;As always, I&amp;rsquo;m reachable on Twitter at
+&lt;p&gt;I also post (well, really, rant) on Twitter:
 &lt;a href=&#34;http://twitter.com/iLevex&#34;&gt;@ilevex&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;~ Lev&lt;/p&gt;
