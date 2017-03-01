@@ -16,8 +16,7 @@
 title: Random Kernel Stuff
 email: levex@linux.com
 description: > 
-        Levente Kurusa's writing about different kernels, mainly Linux. Also,
-        some thoughts about tea and Haskell.
+        Low-level adventures, kernel engineering, OSDev, Haskell and tea.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://kernelstuff.org" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: ilevex
