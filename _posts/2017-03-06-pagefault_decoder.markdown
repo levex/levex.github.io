@@ -2,12 +2,17 @@
 layout: post
 title:  "Pagefault decoder"
 date:   2017-03-05 12:00:00 +0000
-categories: kernel
+categories: kernel calculators
 ---
 
-Hello,
+Many times over the past few years I've encountered Page Faults that due to
+the nature of the environment, were only displayed in hexadecimal format. To
+make these error codes human-readable, I've made a quick demo to let me do just
+that.
 
-often times I need to decode a pagefault error code, here is some JS to do
-this, faster:
+<!-- MORE -->
+
+Enter the error code, here, either in hexadecimal or in decimal notation and
+the readable-string will be shown:
 
 {% include pagefault_solver.html %}
