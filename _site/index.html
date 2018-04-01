@@ -7,10 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Random Kernel Stuff</title>
-  <meta name="description" content="Levente Kurusa&#39;s writing about different kernels, mainly Linux. Also, some thoughts about tea and Haskell.">
+  <meta name="description" content="Low-level adventures, kernel engineering, OSDev, Haskell and tea.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="http://localhost:4000/">
+  <link rel="canonical" href="http://kernelstuff.org/">
   <link rel="alternate" type="application/rss+xml" title="Random Kernel Stuff" href="/feed.xml">
   
   
@@ -20,7 +20,6 @@
   <body>
 
     <header class="site-header" role="banner">
-
   <div class="wrapper">
 
     <a class="site-title" href="/">Random Kernel Stuff</a>
@@ -66,12 +65,100 @@
   <ul class="post-list">
     
       <li>
+        <span class="post-meta">Mar 31, 2018</span>
+
+        <h2>
+          <a class="post-link" href="/post/x86-extensions/2018/03/31/x86-extensions-mmx.html">x86 ISA Extensions part I: MMX</a>
+        </h2>
+      </li>
+      <p>Welcome to this series about instruction set extensions to the x86 architecture. X86 is a computer architecture that has evolved loads over the years and there have been many extensions to the original instruction set (including 64-bit “long” mode). Over the course of a few blog posts, we explore these extensions and the reasoning behind their existence.</p>
+
+<p>So, the first extension I’d like to talk about is the MMX extension originally introduced with the Pentium P5 family of Intel processors in the late 1990s. Let’s dive in!</p>
+
+
+    
+      <li>
+        <span class="post-meta">Aug 20, 2017</span>
+
+        <h2>
+          <a class="post-link" href="/kernel/paper-reviews/2017/08/20/shadow-kernels.html">Paper review: Shadow Kernels</a>
+        </h2>
+      </li>
+      <h1 id="shadow-kernels-a-general-mechanism-for-kernel-specialization-in-existing-operating-systems">Shadow Kernels: A General Mechanism For Kernel Specialization in Existing Operating Systems</h1>
+<h2 id="application-selectable-kernel-specializations-by-chick-et-al">Application selectable kernel specializations by Chick et al.</h2>
+
+<h3 id="abstract">Abstract</h3>
+
+<p>Chick et al start their paper by noting that existing operating system share
+one single kernel <code class="highlighter-rouge">.text</code> section between all running tasks, and that this fact
+contradicts recent research which has proved from time to time that profile
+guided optimizations are beneficial. Their solution involves remapping the
+running kernel’s page-tables on context switches and expose to user-space the
+ability to choose which “shadow kernel” to bind its process to. The authors
+have implemented their prototype using the Xen hypervisor and argue that, thus,
+it can be extended to any operating system that runs on Xen.</p>
+
+
+    
+      <li>
+        <span class="post-meta">Jun 9, 2017</span>
+
+        <h2>
+          <a class="post-link" href="/post/pointer/2017/06/09/pointer-indirection.html">Pointer indirection: A journey into infinity</a>
+        </h2>
+      </li>
+      <p>A few months ago my colleague at Imperial College London showed me a piece of
+code that was part of the mandatory second-year course on Operating Systems.
+The code had around 5 levels of pointer indirection. That was unusual and it
+got me thinking. What is absolute maximum of indirection of pointers that
+compilers can handle?</p>
+
+
+    
+      <li>
+        <span class="post-meta">Mar 5, 2017</span>
+
+        <h2>
+          <a class="post-link" href="/kernel/waccos/2017/03/05/waccOS-intro.html">waccOS - Part I</a>
+        </h2>
+      </li>
+      <p>Imperial College’s Computer Science undergraduates will be already familiar
+with the language <em>WACC</em>. It is a While-like language that is part of the
+mandatory 2nd-year Compilers course and the Integrated Laboratory coursework.
+Basically, the goal is to create a compiler for the language <em>WACC</em> (for which
+you are given a specification) in your language of choice in 4 weeks. After the
+initial 4 weeks, you have 2 extra weeks to implement some extensions of your
+own choice. Some suggested extensions range from adding fully recursive pair
+types, dynamic typing, all the way to garbage collection and even static
+analysis for dynamic types. However, there was one which we spotted fairly
+early on. <strong>Write an operating system.</strong></p>
+
+
+    
+      <li>
+        <span class="post-meta">Mar 5, 2017</span>
+
+        <h2>
+          <a class="post-link" href="/kernel/calculators/2017/03/05/pagefault_decoder.html">Pagefault decoder</a>
+        </h2>
+      </li>
+      <p>Many times over the past few years I’ve encountered Page Faults that due to
+the nature of the environment, were only displayed in hexadecimal format. To
+make these error codes human-readable, I’ve made a quick demo to let me do just
+that.</p>
+
+
+    
+      <li>
         <span class="post-meta">Feb 27, 2017</span>
 
         <h2>
-          <a class="post-link" href="/jekyll/update/2017/02/27/welcome-to-jekyll.html">Welcome to Jekyll!</a>
+          <a class="post-link" href="/post/hello/2017/02/27/welcome-to-jekyll.html">First post!</a>
         </h2>
       </li>
+      <p>Hello, world, welcome to this blog.</p>
+
+
     
   </ul>
 
@@ -93,7 +180,7 @@
         <ul class="contact-list">
           <li>
             
-              Random Kernel Stuff
+              Levente Kurusa
             
             </li>
             
@@ -123,7 +210,7 @@
       </div>
 
       <div class="footer-col footer-col-3">
-        <p>Levente Kurusa&#39;s writing about different kernels, mainly Linux. Also, some thoughts about tea and Haskell.
+        <p>Low-level adventures, kernel engineering, OSDev, Haskell and tea.
 </p>
       </div>
     </div>
