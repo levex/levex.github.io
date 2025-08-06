@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verzik P1 Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .results-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #363;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .stat-card h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Verzik P1 Simulator</h1>
+            <p>Enter your full_code and run simulations</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="fullCode">Full Code:</label>
+                    <textarea id="fullCode" placeholder="Enter your full_code here...">5,0~12~12~0~0,D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~H~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x C~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x H~x~x~S~x~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~C~x~x~x~S~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x B~x~S~x~x~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~!~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~ST~S~x~x~!~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x';
+            </textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="thrallCount">Number of Thralls:</label>
+                    <input type="number" id="thrallCount" value="4" min="0" max="10">
+                </div>
+
+                <div class="input-group">
+                    <label for="simCount">Number of Simulations:</label>
+                    <input type="number" id="simCount" value="15000" min="1000" max="100000">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="runSimulation()">Run Simulation</button>
+                <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+                <button class="btn btn-secondary" onclick="loadExample()">Load Example</button>
+            </div>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h3>Simulation Results</h3>
+                <div id="resultsContent"></div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                Running simulation... Please wait...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const START_HP = 99;
+        const START_STATS = 118;
+        const BREW_AT = 68;
+        const RESTORE_AT = 80;
+
+        // Weapon definitions
+        const WEAPONS = {
+            scythe: { str: 75, atk: 125 },
+            claw: { str: 56, atk: 57 },
+            swift: { str: 0, atk: 0 }
+        };
+
+        // Combat constants
+        const BP_MAX = 27;
+        const BP_ACC = 6816;
+        const SANG_MAX = 35;
+        const SANG_ACC = 11175;
+        const DAWN_MAX = 21;
+
+        class Rolls {
+            constructor() {
+                this.bp_max = BP_MAX;
+                this.bp_acc = BP_ACC;
+                this.sang_max = SANG_MAX;
+                this.sang_acc = SANG_ACC;
+                this.dawn_max = DAWN_MAX;
+                this.weapons = {
+                    scythe: { max: [], acc: [], str: 75, atk: 125 },
+                    claw: { max: [], acc: [], str: 56, atk: 57 },
+                    swift: { max: [], acc: [], str: 0, atk: 0 }
+                };
+                this.updateWeaponStats();
+            }
+
+            pot(player, teamHp, teamStats, potCooldown) {
+                if (potCooldown[player] === 0) {
+                    if (teamHp[player] < BREW_AT) {
+                        teamHp[player] = Math.min(teamHp[player] + 16, 115);
+                        teamStats[player] -= Math.floor(teamStats[player] * 0.1) + 2;
+                        potCooldown[player] += 3;
+                    } else {
+                        if (teamHp[player] > 80 && teamStats[player] < 99) {
+                            teamStats[player] = Math.min(99, teamStats[player] + (Math.floor(teamStats[player] * 3/10) + 10));
+                            potCooldown[player] += 3;
+                        }
+                    }
+                    this.updateWeaponStats(teamStats);
+                }
+            }
+
+            maxHit(player, weapon, teamStats, rings) {
+                const weaponBns = this.weapons[weapon].str;
+                const effStr = Math.floor(Math.floor(teamStats[player] * 1.23) + 11);
+                const totalBns = (57 + 64 + weaponBns + parseInt(rings[player])) / 640;
+                return Math.floor(0.5 + (effStr * totalBns));
+            }
+
+            accRoll(player, weapon, teamStats) {
+                const weaponBns = this.weapons[weapon].atk;
+                const effAcc = Math.floor(Math.floor(teamStats[player] * 1.2) + 8);
+                const totalBns = 47 + 64 + weaponBns;
+                return effAcc * totalBns;
+            }
+
+            updateWeaponStats(teamStats) {
+                for (let weapon in this.weapons) {
+                    this.weapons[weapon].max = [];
+                    this.weapons[weapon].acc = [];
+                    for (let i = 0; i < 5; i++) {
+                        this.weapons[weapon].max.push(this.maxHit(i, weapon, teamStats, [0, 12, 12, 0, 0]));
+                        if (this.weapons[weapon].acc !== undefined) {
+                            this.weapons[weapon].acc.push(this.accRoll(i, weapon, teamStats));
+                        }
+                    }
+                }
+            }
+        }
+
+        function verzikRoll(playerDamage, style) {
+            if (style === 'Melee') {
+                return Math.min(Math.floor(Math.random() * 11), playerDamage);
+            } else {
+                return Math.min(Math.floor(Math.random() * 4), playerDamage);
+            }
+        }
+
+        function scythe(player, rolls, teamStats) {
+            const maxHit = rolls.maxHit(player, 'scythe', teamStats, [0, 12, 12, 0, 0]);
+            const accRoll = rolls.accRoll(player, 'scythe', teamStats);
+
+            const max1 = maxHit;
+            const max2 = Math.floor(maxHit / 2);
+            const max3 = Math.floor(maxHit / 4);
+
+            let splat1 = 0, splat2 = 0, splat3 = 0;
+
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                splat1 = Math.max(1, verzikRoll(Math.floor(Math.random() * (max1 + 1)), 'Melee'));
+            }
+
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                splat2 = Math.max(1, verzikRoll(Math.floor(Math.random() * (max2 + 1)), 'Melee'));
+            }
+
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                splat3 = Math.max(1, verzikRoll(Math.floor(Math.random() * (max3 + 1)), 'Melee'));
+            }
+
+            return splat1 + splat2 + splat3;
+        }
+
+        function swift(player, rolls, teamStats) {
+            const maxHit = rolls.maxHit(player, 'swift', teamStats, [0, 12, 12, 0, 0]);
+            const accRoll = rolls.accRoll(player, 'swift', teamStats);
+
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                return Math.max(1, verzikRoll(Math.floor(Math.random() * (maxHit + 1)), 'Melee'));
+            }
+            return 0;
+        }
+
+        function claw(player, rolls, teamStats) {
+            const maxHit = rolls.maxHit(player, 'claw', teamStats, [0, 12, 12, 0, 0]);
+            const accRoll = rolls.accRoll(player, 'claw', teamStats);
+
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                return Math.max(1, verzikRoll(Math.floor(Math.random() * (maxHit + 1)), 'Melee'));
+            }
+            return 0;
+        }
+
+        function bp() {
+            const maxHit = BP_MAX;
+            const accRoll = BP_ACC;
+
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                return Math.max(1, verzikRoll(Math.floor(Math.random() * (maxHit + 1)), 'Ranged'));
+            }
+            return 0;
+        }
+
+        function sang() {
+            const maxHit = SANG_MAX;
+            const accRoll = SANG_ACC;
+
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                return Math.max(1, verzikRoll(Math.floor(Math.random() * (maxHit + 1)), 'Mage'));
+            }
+            return 0;
+        }
+
+        function dawnSpec() {
+            return Math.floor(Math.random() * 76) + 75;
+        }
+
+        function attack(weapon, player, rolls, teamStats, teamHp) {
+            if (weapon === 'ST') {
+                teamHp[player] -= 10;
+            }
+
+            let hit = 0;
+
+            switch (weapon) {
+                case 'S':
+                    hit = scythe(player, rolls, teamStats);
+                    break;
+                case 'B':
+                    hit = bp();
+                    break;
+                case 'C':
+                    hit = claw(player, rolls, teamStats);
+                    break;
+                case 'H':
+                    hit = swift(player, rolls, teamStats);
+                    break;
+                case 'T':
+                    hit = sang();
+                    break;
+                case 'D':
+                    hit = dawnSpec();
+                    break;
+            }
+
+            return hit;
+        }
+
+        function thrall(scale) {
+            if (scale === 0) return 0;
+
+            let hit = 0;
+            for (let i = 0; i < scale; i++) {
+                const thrallSwing = Math.floor(Math.random() * 4);
+                hit += verzikRoll(thrallSwing, 'Melee');
+            }
+            return hit;
+        }
+
+        function p1Sim(hp, fullCode, thrallCount) {
+            const splitCode = fullCode.split(',');
+            const scale = parseInt(splitCode[0]);
+            const rings = splitCode[1].split('~');
+            const fullChart = splitCode[2];
+
+            const chartParts = fullChart.split(' ');
+            const teamHits = [
+                chartParts[0].split('~'),
+                chartParts[1].split('~'),
+                chartParts[2].split('~'),
+                chartParts[3].split('~'),
+                chartParts[4].split('~')
+            ];
+
+            const rolls = new Rolls();
+            const teamHp = [START_HP, START_HP, START_HP, START_HP, START_HP];
+            const teamStats = [START_STATS, START_STATS, START_STATS, START_STATS, START_STATS];
+            const potCooldown = [0, 0, 0, 0, 0];
+            const verzikAutos = [21, 35, 49, 63, 77, 91, 105, 119, 133, 147];
+
+            let timer = 0;
+            let player = 0;
+
+            while (hp > 0) {
+                hp -= attack(teamHits[player][timer], player, rolls, teamStats, teamHp);
+                rolls.pot(player, teamHp, teamStats, potCooldown);
+                potCooldown[player] = Math.max(potCooldown[player] - 1, 0);
+
+                player++;
+                if (player >= 5) {
+                    player = 0;
+                    if (timer % 4 === 2) {
+                        hp -= thrall(thrallCount);
+                    }
+
+                    if (verzikAutos.includes(timer - 1)) {
+                        for (let i = 0; i < 5; i++) {
+                            if (teamHits[i][timer - 4] !== 'P') {
+                                const verzikDamage = Math.floor(Math.random() * 69);
+                                teamHp[i] -= verzikDamage;
+                            }
+                        }
+                    }
+
+                    if (timer === 116) {
+                        hp = -1;
+                    }
+                    if (hp > 0) {
+                        timer++;
+                    }
+                }
+            }
+
+            return timer + 1;
+        }
+
+        function runSimulation() {
+            const fullCode = document.getElementById('fullCode').value.trim();
+            const thrallCount = parseInt(document.getElementById('thrallCount').value);
+            const simCount = parseInt(document.getElementById('simCount').value);
+
+            if (!fullCode) {
+                showError('Please enter a full_code');
+                return;
+            }
+
+            if (fullCode.split(',').length < 3) {
+                showError('Invalid full_code format');
+                return;
+            }
+
+            showLoading();
+
+            // Run simulation in a web worker or setTimeout to avoid blocking UI
+            setTimeout(() => {
+                try {
+                    const splitCode = fullCode.split(',');
+                    const scale = parseInt(splitCode[0]);
+                    let hp;
+                    
+                    if (scale === 5) {
+                        hp = 2000;
+                    } else if (scale === 4) {
+                        hp = 1750;
+                    } else {
+                        hp = 1500;
+                    }
+
+                    const killTimes = [];
+                    let total = 0;
+
+                    for (let x = 0; x < simCount; x++) {
+                        killTimes.push(p1Sim(hp, fullCode, thrallCount));
+                    }
+
+                    for (let ele of killTimes) {
+                        total += ele;
+                    }
+                    const average = total / simCount;
+
+                    // Count frequency of each kill time
+                    const frequency = {};
+                    for (let time of killTimes) {
+                        frequency[time] = (frequency[time] || 0) + 1;
+                    }
+
+                    showResults(average, frequency, scale, thrallCount, simCount);
+                } catch (error) {
+                    showError('Error running simulation: ' + error.message);
+                }
+            }, 100);
+        }
+
+        function showResults(average, frequency, scale, thrallCount, simCount) {
+            hideLoading();
+            
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultsContent');
+
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Average Time to Kill</h4>
+                        <div class="stat-value">${average.toFixed(2)} ticks</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Scale</h4>
+                        <div class="stat-value">${scale}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Thrall Count</h4>
+                        <div class="stat-value">${thrallCount}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Simulations Run</h4>
+                        <div class="stat-value">${simCount.toLocaleString()}</div>
+                    </div>
+                </div>
+            `;
+
+            // Add frequency distribution
+            html += '<h4 style="margin-top: 20px; color: #333;">Kill Time Distribution:</h4>';
+            html += '<div style="max-height: 300px; overflow-y: auto; background: white; border-radius: 8px; padding: 15px; margin-top: 10px;">';
+            
+            const sortedTimes = Object.keys(frequency).sort((a, b) => parseInt(a) - parseInt(b));
+            for (let time of sortedTimes) {
+                const count = frequency[time];
+                const percentage = ((count / simCount) * 100).toFixed(2);
+                html += `
+                    <div class="result-item">
+                        <span class="result-label">${time} ticks</span>
+                        <span class="result-value">${count} (${percentage}%)</span>
+                    </div>
+                `;
+            }
+            html += '</div>';
+
+            contentDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            hideLoading();
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultsContent');
+            contentDiv.innerHTML = `<div class="error">${message}</div>`;
+            resultsDiv.style.display = 'block';
+        }
+
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function loadExample() {
+            document.getElementById('fullCode').value = '5,0~12~12~0~0,D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~H~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x C~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x H~x~x~S~x~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~C~x~x~x~S~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x B~x~S~x~x~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~!~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~ST~S~x~x~!~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x';
+            document.getElementById('thrallCount').value = '4';
+            document.getElementById('simCount').value = '15000';
+        }
+    </script>
+</body>
+</html> 
