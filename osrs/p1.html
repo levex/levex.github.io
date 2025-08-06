@@ -305,7 +305,8 @@
             maxHit(player, weapon, teamStats, rings) {
                 const weaponBns = this.weapons[weapon].str;
                 const effStr = Math.floor(Math.floor(teamStats[player] * 1.23) + 11);
-                const totalBns = (57 + 64 + weaponBns + parseInt(rings[player])) / 640;
+                const ringBonus = rings && rings[player] ? parseInt(rings[player]) : 0;
+                const totalBns = (57 + 64 + weaponBns + ringBonus) / 640;
                 return Math.floor(0.5 + (effStr * totalBns));
             }
 
@@ -456,6 +457,12 @@
             const fullChart = splitCode[2];
 
             const chartParts = fullChart.split(' ');
+            
+            // Validate that we have enough chart parts
+            if (chartParts.length < 5) {
+                throw new Error('Invalid full_code: Not enough chart parts');
+            }
+            
             const teamHits = [
                 chartParts[0].split('~'),
                 chartParts[1].split('~'),
@@ -474,7 +481,14 @@
             let player = 0;
 
             while (hp > 0) {
-                hp -= attack(teamHits[player][timer], player, rolls, teamStats, teamHp);
+                // Add bounds checking for teamHits array access
+                if (player >= teamHits.length || timer >= teamHits[player].length) {
+                    // If we've reached the end of the chart, stop the simulation
+                    break;
+                }
+                
+                const weapon = teamHits[player][timer];
+                hp -= attack(weapon, player, rolls, teamStats, teamHp);
                 rolls.pot(player, teamHp, teamStats, potCooldown);
                 potCooldown[player] = Math.max(potCooldown[player] - 1, 0);
 
@@ -487,7 +501,8 @@
 
                     if (verzikAutos.includes(timer - 1)) {
                         for (let i = 0; i < 5; i++) {
-                            if (teamHits[i][timer - 4] !== 'P') {
+                            // Add bounds checking for verzik auto damage
+                            if (timer - 4 >= 0 && i < teamHits.length && timer - 4 < teamHits[i].length && teamHits[i][timer - 4] !== 'P') {
                                 const verzikDamage = Math.floor(Math.random() * 69);
                                 teamHp[i] -= verzikDamage;
                             }
@@ -516,10 +531,10 @@
                 return;
             }
 
-            if (fullCode.split(',').length < 3) {
-                showError('Invalid full_code format');
-                return;
-            }
+            // Debug: Log the full_code to console
+            console.log('Full code:', fullCode);
+            console.log('Thrall count:', thrallCount);
+            console.log('Sim count:', simCount);
 
             showLoading();
 
@@ -527,9 +542,18 @@
             setTimeout(() => {
                 try {
                     const splitCode = fullCode.split(',');
-                    const scale = parseInt(splitCode[0]);
-                    let hp;
                     
+                    // Validate the full_code format
+                    if (splitCode.length < 3) {
+                        throw new Error('Invalid full_code format. Expected at least 3 parts separated by commas.');
+                    }
+                    
+                    const scale = parseInt(splitCode[0]);
+                    if (isNaN(scale) || scale < 0 || scale > 5) {
+                        throw new Error('Invalid scale value. Must be a number between 0 and 5.');
+                    }
+                    
+                    let hp;
                     if (scale === 5) {
                         hp = 2000;
                     } else if (scale === 4) {
@@ -542,13 +566,20 @@
                     let total = 0;
 
                     for (let x = 0; x < simCount; x++) {
-                        killTimes.push(p1Sim(hp, fullCode, thrallCount));
+                        const result = p1Sim(hp, fullCode, thrallCount);
+                        if (result > 0) {
+                            killTimes.push(result);
+                        }
+                    }
+
+                    if (killTimes.length === 0) {
+                        throw new Error('No valid simulation results. Check your full_code format.');
                     }
 
                     for (let ele of killTimes) {
                         total += ele;
                     }
-                    const average = total / simCount;
+                    const average = total / killTimes.length;
 
                     // Count frequency of each kill time
                     const frequency = {};
@@ -556,7 +587,7 @@
                         frequency[time] = (frequency[time] || 0) + 1;
                     }
 
-                    showResults(average, frequency, scale, thrallCount, simCount);
+                    showResults(average, frequency, scale, thrallCount, killTimes.length);
                 } catch (error) {
                     showError('Error running simulation: ' + error.message);
                 }
