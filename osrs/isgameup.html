@@ -156,9 +156,11 @@
             try {
                 log(`Checking URL: ${url}`);
                 
-                const response = await fetch(url, {
+                // Use a CORS proxy to bypass CORS restrictions
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                
+                const response = await fetch(proxyUrl, {
                     method: 'GET',
-                    mode: 'cors', // This might be limited by CORS policies
                     cache: 'no-cache'
                 });
 
@@ -168,8 +170,8 @@
                     log('SUCCESS: Status 200 received!');
                     updateStatus('Success - 200 received!', 'success');
                     sendNotification(
-                        'URL Status Checker', 
-                        `The URL ${url} is now responding with status 200!`
+                        'OSRS Status Checker', 
+                        `The OSRS game is now up and responding!`
                     );
                     stopMonitoring();
                 } else {
