@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>is osrs up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.running {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.stopped {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.success {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .log {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>game is ass</h1>
+        <p>is osrs up</p>
+        
+        <div class="form-group">
+            <label for="urlInput">javconfig</label>
+            <input type="url" id="urlInput" placeholder="https://example.com" value="https://oldschool.config.runescape.com/jav_config.ws">
+        </div>
+        
+        <div class="form-group">
+            <button id="startBtn" onclick="startMonitoring()">Start Monitoring</button>
+            <button id="stopBtn" onclick="stopMonitoring()" disabled>Stop Monitoring</button>
+        </div>
+        
+        <div id="status" class="status stopped">
+            Status: Stopped
+        </div>
+        
+        <div class="log" id="log">
+            <div>Log will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let intervalId = null;
+        let isMonitoring = false;
+
+        // Request notification permission on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+        });
+
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(message, className) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = `Status: ${message}`;
+            statusElement.className = `status ${className}`;
+        }
+
+        function sendNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: '/favicon.ico' // You can change this to your own icon
+                });
+            } else {
+                // Fallback for browsers without notification support or denied permissions
+                alert(`${title}\n${body}`);
+            }
+        }
+
+        async function checkUrl() {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                log('Error: No URL provided');
+                return;
+            }
+
+            try {
+                log(`Checking URL: ${url}`);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors', // This might be limited by CORS policies
+                    cache: 'no-cache'
+                });
+
+                log(`Response status: ${response.status}`);
+
+                if (response.status === 200) {
+                    log('SUCCESS: Status 200 received!');
+                    updateStatus('Success - 200 received!', 'success');
+                    sendNotification(
+                        'URL Status Checker', 
+                        `The URL ${url} is now responding with status 200!`
+                    );
+                    stopMonitoring();
+                } else {
+                    log(`Status ${response.status} received, continuing to monitor...`);
+                }
+            } catch (error) {
+                log(`Error checking URL: ${error.message}`);
+                // Continue monitoring even if there's an error (network issues, etc.)
+            }
+        }
+
+        function startMonitoring() {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            if (isMonitoring) {
+                return;
+            }
+
+            isMonitoring = true;
+            updateStatus('Running - Checking every 5 seconds', 'running');
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('urlInput').disabled = true;
+
+            log('Starting URL monitoring...');
+            
+            // Check immediately
+            checkUrl();
+            
+            // Then check every 5 seconds
+            intervalId = setInterval(checkUrl, 5000);
+        }
+
+        function stopMonitoring() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            
+            isMonitoring = false;
+            updateStatus('Stopped', 'stopped');
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('urlInput').disabled = false;
+            
+            log('Monitoring stopped');
+        }
+
+        // Allow Enter key to start monitoring
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startMonitoring();
+            }
+        });
+    </script>
+</body>
+</html>
