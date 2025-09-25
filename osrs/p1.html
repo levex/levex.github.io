@@ -205,6 +205,48 @@
             font-weight: 700;
             color: #667eea;
         }
+
+        .advanced-options {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .input-group label input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            transform: scale(1.1);
+        }
+
+        .input-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .hint-icon {
+            margin-left: 8px;
+            text-decoration: none;
+            color: #667eea;
+            font-size: 16px;
+            transition: color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .hint-icon:hover {
+            color: #5a6fd8;
+            text-decoration: none;
+        }
+
+        .hint-icon span {
+            font-size: 14px;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -230,6 +272,29 @@
                 <div class="input-group">
                     <label for="simCount">Number of Simulations:</label>
                     <input type="number" id="simCount" value="15000" min="1000" max="100000">
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="showAdvanced" onchange="toggleAdvancedOptions()">
+                        Show Advanced Options
+                    </label>
+                </div>
+
+                <div id="advancedOptions" class="advanced-options" style="display: none;">
+                    <div class="input-group">
+                        <label for="dawnMax">
+                            Dawn Auto Max Hit:
+                            <a href="https://oldschool.runescape.wiki/w/Dawnbringer#Maximum_hit" target="_blank" class="hint-icon" title="View Dawnbringer max hit formula on OSRS Wiki">
+                                <span>ℹ️</span>
+                            </a>
+                        </label>
+                        <input type="number" id="dawnMax" value="21" min="1" max="50">
+                    </div>
+                    <div class="input-group">
+                        <label for="timerTimeout">Verzik Timeout:</label>
+                        <input type="number" id="timerTimeout" value="116" min="50" max="200">
+                    </div>
                 </div>
             </div>
 
@@ -270,15 +335,14 @@
         const BP_ACC = 6816;
         const SANG_MAX = 35;
         const SANG_ACC = 11175;
-        const DAWN_MAX = 21;
 
         class Rolls {
-            constructor() {
+            constructor(dawnMax = 21) {
                 this.bp_max = BP_MAX;
                 this.bp_acc = BP_ACC;
                 this.sang_max = SANG_MAX;
                 this.sang_acc = SANG_ACC;
-                this.dawn_max = DAWN_MAX;
+                this.dawn_max = dawnMax;
                 this.weapons = {
                     scythe: { max: [], acc: [], str: 75, atk: 125 },
                     claw: { max: [], acc: [], str: 56, atk: 57 },
@@ -409,6 +473,10 @@
             return 0;
         }
 
+        function dawnAuto(dawnMax = 21) {
+            return Math.max(1, Math.floor(Math.random() * (dawnMax + 1)));
+        }
+
         function dawnSpec() {
             return Math.floor(Math.random() * 76) + 75;
         }
@@ -439,6 +507,9 @@
                 case 'D':
                     hit = dawnSpec();
                     break;
+                case 'A':
+                    hit = dawnAuto(rolls.dawn_max);
+                    break;
             }
 
             return hit;
@@ -455,7 +526,7 @@
             return hit;
         }
 
-        function p1Sim(hp, fullCode, thrallCount) {
+        function p1Sim(hp, fullCode, thrallCount, dawnMax = 21, timerTimeout = 116) {
             try {
                 console.log('Starting p1Sim with hp:', hp, 'fullCode:', fullCode, 'thrallCount:', thrallCount);
                 
@@ -492,7 +563,7 @@
                 const verzikAutos = [21, 35, 49, 63, 77, 91, 105, 119, 133, 147];
                 
                 // Create rolls instance and update with correct rings
-                const rolls = new Rolls();
+                const rolls = new Rolls(dawnMax);
                 rolls.updateWeaponStats(teamStats);
 
                 let timer = 0;
@@ -534,7 +605,7 @@
                             }
                         }
 
-                        if (timer === 116) {
+                        if (timer === timerTimeout) {
                             hp = -1;
                         }
                         if (hp > 0) {
@@ -555,6 +626,8 @@
             const fullCode = document.getElementById('fullCode').value.trim();
             const thrallCount = parseInt(document.getElementById('thrallCount').value);
             const simCount = parseInt(document.getElementById('simCount').value);
+            const dawnMax = parseInt(document.getElementById('dawnMax').value);
+            const timerTimeout = parseInt(document.getElementById('timerTimeout').value);
 
             if (!fullCode) {
                 showError('Please enter a full_code');
@@ -610,7 +683,7 @@
                         }
                         
                         try {
-                            const result = p1Sim(hp, fullCode, thrallCount);
+                            const result = p1Sim(hp, fullCode, thrallCount, dawnMax, timerTimeout);
                             if (result > 0) {
                                 killTimes.push(result);
                             }
@@ -641,7 +714,7 @@
                     
                     console.log('Frequency distribution:', frequency);
 
-                    showResults(average, frequency, scale, thrallCount, killTimes.length);
+                    showResults(average, frequency, scale, thrallCount, killTimes.length, dawnMax);
                 } catch (error) {
                     console.error('Simulation error:', error);
                     showError('Error running simulation: ' + error.message);
@@ -649,7 +722,7 @@
             }, 100);
         }
 
-        function showResults(average, frequency, scale, thrallCount, simCount) {
+        function showResults(average, frequency, scale, thrallCount, simCount, dawnMax) {
             hideLoading();
             
             const resultsDiv = document.getElementById('results');
@@ -721,6 +794,17 @@
             document.getElementById('simCount').value = '15000';
         }
 
+        function toggleAdvancedOptions() {
+            const checkbox = document.getElementById('showAdvanced');
+            const advancedOptions = document.getElementById('advancedOptions');
+            
+            if (checkbox.checked) {
+                advancedOptions.style.display = 'block';
+            } else {
+                advancedOptions.style.display = 'none';
+            }
+        }
+
         function testBasicFunctionality() {
             console.log('Testing basic functionality...');
             
@@ -742,10 +826,10 @@
                 // Test 3: Check if simple simulation works
                 const simpleCode = '5,0~12~12~0~0,D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~H~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x C~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x H~x~x~S~x~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~C~x~x~x~S~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x B~x~S~x~x~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~!~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~ST~S~x~x~!~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x';
                 
-                const result = p1Sim(2000, simpleCode, 4);
+                const result = p1Sim(2000, simpleCode, 4, 21, 116);
                 console.log('Simple simulation result:', result);
                 
-                showResults(result, {[result]: 1}, 5, 4, 1);
+                showResults(result, {[result]: 1}, 5, 4, 1, 21);
                 
             } catch (error) {
                 console.error('Test failed:', error);
