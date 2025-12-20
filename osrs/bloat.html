@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloat Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .results-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .stat-card h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .output-section {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bloat Simulator</h1>
+            <p>Enter your code and run simulations</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="fullCode">Code:</label>
+                    <textarea id="fullCode" placeholder="Enter your code here..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="minWalk">Min Walk:</label>
+                    <input type="number" id="minWalk" value="39" min="1" max="100">
+                </div>
+
+                <div class="input-group">
+                    <label for="maxWalk">Max Walk:</label>
+                    <input type="number" id="maxWalk" value="100" min="1" max="100">
+                </div>
+
+                <div class="input-group">
+                    <label for="simCount">Number of Simulations:</label>
+                    <input type="number" id="simCount" value="25000" min="1000" max="100000">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="runSimulation()">Run Simulation</button>
+                <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+            </div>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h3>Simulation Results</h3>
+                <div id="resultsContent"></div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                Running simulation... Please wait...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MIN_WALK_DEFAULT = 39;
+        const MAX_WALK_DEFAULT = 100;
+
+        class Rolls {
+            constructor() {
+                this.bgs_max = 88;
+                this.bgs_acc = 89042;
+                this.scythe_max = 55;
+                this.scythe_acc = 44140;
+                this.pneck_max = 46;
+                this.pneck_acc = 36784;
+                this.bolt_max = 51;
+                this.bolt_acc = 33285; // Bolt rag not spec
+                this.claw_max = 50;
+                this.claw_acc = 31737;
+                this.chally_max = 75;
+                this.chally_acc = 40587;
+            }
+        }
+
+        const loadout = new Rolls();
+
+        function accCheck(accuracy, defenceRoll) {
+            return Math.floor(Math.random() * (accuracy + 1)) > Math.floor(Math.random() * (defenceRoll + 1));
+        }
+
+        function walkBgs(player, bgs, defence, slashDef, playerSpec, playerCooldown) {
+            playerSpec[player] -= 50;
+            playerCooldown[player] = 6;
+
+            const maxHit = loadout.bgs_max;
+            const accuracy = loadout.bgs_acc;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (slashDef + 64);
+
+            let hit = 0;
+
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.random() * (maxHit + 1)));
+                bgs.push(hit);
+            }
+
+            return Math.floor(hit / 2);
+        }
+
+        function forceBgs(player, hit, bgs, playerSpec, playerCooldown) {
+            playerSpec[player] -= 50;
+            playerCooldown[player] = 6;
+
+            const trueBgs = (hit * 2) + Math.floor(Math.random() * 2);
+
+            bgs.push(trueBgs);
+
+            return hit;
+        }
+
+        function walkScythe(player, bgs, defence, slashDef) {
+            const maxHit = loadout.scythe_max;
+            const accuracy = loadout.scythe_acc;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (slashDef + 64);
+
+            let hit = 0;
+
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.floor(Math.random() * (maxHit + 1)) / 2));
+            }
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.floor(Math.random() * (Math.floor(maxHit / 2) + 1)) / 2));
+            }
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.floor(Math.random() * (Math.floor(maxHit / 4) + 1)) / 2));
+            }
+
+            return hit;
+        }
+
+        function pneckScythe(player, bgs, defence, slashDef) {
+            const maxHit = loadout.pneck_max;
+            const accuracy = loadout.pneck_acc;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (slashDef + 64);
+
+            let hit = 0;
+
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.floor(Math.random() * (maxHit + 1)) / 2));
+            }
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.floor(Math.random() * (Math.floor(maxHit / 2) + 1)) / 2));
+            }
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.floor(Math.random() * (Math.floor(maxHit / 4) + 1)) / 2));
+            }
+
+            return hit;
+        }
+
+        function walkBoltRag(player, bgs, defence, rangeDef) {
+            const maxHit = loadout.bolt_max;
+            const accuracy = loadout.bolt_acc;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (rangeDef + 64);
+
+            let hit = 0;
+
+            if (Math.random() < 0.066) {
+                hit = 55;
+            } else if (accCheck(accuracy, defRoll)) {
+                hit = Math.max(1, Math.floor(Math.random() * (maxHit + 1)));
+            } else {
+                hit = 0;
+            }
+
+            return Math.floor(hit / 2);
+        }
+
+        function scythe(player, bgs, defence, slashDef, playerCooldown) {
+            playerCooldown[player] = 5;
+
+            const maxHit = loadout.scythe_max;
+            const accuracy = loadout.scythe_acc;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (slashDef + 64);
+
+            let hit = 0;
+
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.random() * (maxHit + 1)));
+            }
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.random() * (Math.floor(maxHit / 2) + 1)));
+            }
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.random() * (Math.floor(maxHit / 4) + 1)));
+            }
+
+            return hit;
+        }
+
+        function zcbSpec(player, bgs, defence, rangeDef, playerSpec, playerCooldown) {
+            playerSpec[player] -= 75;
+            playerCooldown[player] = 5;
+
+            const accuracy = loadout.bolt_acc * 2;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (rangeDef + 64);
+
+            let hit = 0;
+
+            if (accCheck(accuracy, defRoll)) {
+                hit += 110;
+            }
+
+            return hit;
+        }
+
+        function claw(player, bgs, defence, slashDef, playerSpec, playerCooldown) {
+            playerSpec[player] -= 50;
+            playerCooldown[player] = 4;
+
+            const maxHit = loadout.claw_max;
+            const accuracy = loadout.claw_acc;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (slashDef + 64);
+
+            let hit = 0;
+
+            if (accCheck(accuracy, defRoll)) {
+                const splat1 = Math.floor(Math.random() * (maxHit - Math.floor(maxHit / 2))) + Math.floor(maxHit / 2);
+                const splat2 = Math.floor(splat1 / 2);
+                const splat3 = Math.floor(splat2 / 2);
+                const splat4 = Math.floor(Math.random() * 2) + splat3;
+                hit = splat1 + splat2 + splat3 + splat4;
+            } else if (accCheck(accuracy, defRoll)) {
+                const splat1 = 0;
+                const splat2 = Math.floor(Math.random() * (Math.floor(maxHit * 0.875) - Math.floor(maxHit * 0.375) + 1)) + Math.floor(maxHit * 0.375);
+                const splat3 = Math.floor(splat2 / 2);
+                const splat4 = Math.floor(Math.random() * 2) + splat3;
+                hit = splat1 + splat2 + splat3 + splat4;
+            } else if (accCheck(accuracy, defRoll)) {
+                const splat1 = 0;
+                const splat2 = 0;
+                const splat3 = Math.floor(Math.random() * (Math.floor(maxHit * 0.75) - Math.floor(maxHit * 0.25) + 1)) + Math.floor(maxHit * 0.25);
+                const splat4 = Math.floor(Math.random() * 2) + splat3;
+                hit = splat1 + splat2 + splat3 + splat4;
+            } else if (accCheck(accuracy, defRoll)) {
+                const first = 0;
+                const second = 0;
+                const third = 0;
+                const fourth = Math.floor(Math.random() * (Math.floor(maxHit * 1.25) - Math.floor(maxHit * 0.25) + 1)) + Math.floor(maxHit * 0.25);
+                hit = first + second + third + fourth;
+            } else if (Math.floor(Math.random() * 2) === 1) {
+                hit += 2;
+            }
+
+            return hit;
+        }
+
+        function chally(player, bgs, defence, slashDef, playerSpec, playerCooldown) {
+            playerSpec[player] -= 30;
+            playerCooldown[player] = 7;
+
+            const bonusDmg = Math.floor(loadout.chally_max * 0.1);
+            const maxHit = loadout.chally_max - bonusDmg;
+            const accuracy = loadout.chally_acc;
+            const defLevel = Math.max(defence - bgs.reduce((a, b) => a + b, 0), 0);
+            const defRoll = (defLevel + 9) * (slashDef + 64);
+
+            let hit = 0;
+
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.random() * (maxHit + 1))) + bonusDmg;
+            }
+
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, Math.floor(Math.random() * (maxHit + 1))) + bonusDmg;
+            }
+
+            return hit;
+        }
+
+        function walk(turnCooldown, minWalk, maxWalk) {
+            let tick = 0;
+            let turnTimer = turnCooldown - 1;
+            
+            while (true) {
+                if (Math.floor(Math.random() * 16) === 0 && turnTimer === 0) {
+                    tick += 5;
+                    turnTimer += turnCooldown - 4;
+                }
+                if (Math.floor(Math.random() * 4) === 3 && tick >= minWalk) {
+                    return tick;
+                }
+                if (tick >= maxWalk) {
+                    return tick;
+                }
+
+                tick += 1;
+                turnTimer = Math.max(0, turnTimer - 1);
+            }
+        }
+
+        function walkAttack(attack, player, bgs, defence, slashDef, rangeDef, backUpBgsOn, playerSpec, playerCooldown) {
+            if (attack === "S") {
+                return walkScythe(player, bgs, defence, slashDef);
+            }
+
+            if (attack === "P") {
+                return pneckScythe(player, bgs, defence, slashDef);
+            }
+
+            if (attack === "B") {
+                const bgsSum = bgs.reduce((a, b) => a + b, 0);
+                if (bgsSum < 100 - backUpBgsOn) {
+                    return walkBgs(player, bgs, defence, slashDef, playerSpec, playerCooldown);
+                } else {
+                    return walkScythe(player, bgs, defence, slashDef);
+                }
+            }
+
+            if (attack === "Z") {
+                return walkBoltRag(player, bgs, defence, rangeDef);
+            }
+
+            if (attack === "T") {
+                return walkBoltRag(player, bgs, defence, rangeDef);
+            }
+
+            if (attack === "x") {
+                return 0;
+            }
+
+            // Force BGS with specific hit value
+            return forceBgs(player, parseInt(attack), bgs, playerSpec, playerCooldown);
+        }
+
+        function downAttack(player, downTime, hp, bgs, defence, slashDef, rangeDef, challyThresh, playerCooldown, playerSpec) {
+            let hit = 0;
+
+            if (playerCooldown[player] === 0) {
+                if (playerSpec[player] === 105 || playerSpec[player] === 75 || playerSpec[player] === 125) {
+                    hit = zcbSpec(player, bgs, defence, rangeDef, playerSpec, playerCooldown);
+                } else if (playerSpec[player] === 100 || playerSpec[player] === 50 || playerSpec[player] === 55 || playerSpec[player] === 80 || playerSpec[player] === 130) {
+                    hit = claw(player, bgs, defence, slashDef, playerSpec, playerCooldown);
+                } else if (playerSpec[player] === 30 && hp <= challyThresh) {
+                    hit = chally(player, bgs, defence, slashDef, playerSpec, playerCooldown);
+                } else if (playerSpec[player] === 30 && downTime <= 5) {
+                    hit = chally(player, bgs, defence, slashDef, playerSpec, playerCooldown);
+                } else {
+                    if (downTime > 0) {
+                        hit = scythe(player, bgs, defence, slashDef, playerCooldown);
+                    } else {
+                        hit = walkScythe(player, bgs, defence, slashDef);
+                    }
+                }
+            }
+
+            return hit;
+        }
+
+        function sim(scale, mode, backUpBgsOn, challyPercent, startingSpecs, downDelay, chart, minWalk, maxWalk) {
+            let slashDef, rangeDef, defence, turnCooldown, baseHp;
+
+            if (mode === "Reg") {
+                slashDef = 20;
+                rangeDef = 800;
+                defence = 100;
+                turnCooldown = 32;
+                if (scale === 5) {
+                    baseHp = 2000;
+                } else if (scale === 4) {
+                    baseHp = 1750;
+                } else {
+                    baseHp = 1500;
+                }
+            } else if (mode === "HMT") {
+                slashDef = 20;
+                rangeDef = 800;
+                defence = 100;
+                turnCooldown = 16;
+                if (scale === 5) {
+                    baseHp = 2400;
+                } else if (scale === 4) {
+                    baseHp = 2100;
+                } else {
+                    baseHp = 1800;
+                }
+            } else {
+                slashDef = 5;
+                rangeDef = 800;
+                defence = 80;
+                turnCooldown = 32;
+                if (scale === 5) {
+                    baseHp = 1280;
+                } else if (scale === 4) {
+                    baseHp = 1088;
+                } else if (scale === 3) {
+                    baseHp = 864;
+                } else if (scale === 2) {
+                    baseHp = 608;
+                } else {
+                    baseHp = 320;
+                }
+            }
+
+            const challyThresh = baseHp * (challyPercent * 0.01);
+
+            const bgs = [];
+            const playerCooldown = [0, 0, 0, 0, 0];
+            const playerSpec = [0, 0, 0, 0, 0];
+
+            let timer = 1;
+            let player = 0;
+
+            let hp = baseHp;
+
+            const downTick = Math.max(Math.min(walk(turnCooldown, minWalk, maxWalk), maxWalk), minWalk);
+
+            // Shuffle chart
+            const scaledChart = [...chart];
+            for (let i = 0; i < scale; i++) {
+                scaledChart.push(chart[i]);
+            }
+            // Simple shuffle
+            for (let i = scaledChart.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [scaledChart[i], scaledChart[j]] = [scaledChart[j], scaledChart[i]];
+            }
+
+            while (timer !== downTick) {
+                const tick = timer - 1;
+                const hit = scaledChart[player];
+
+                let dmg = 0;
+                if (hit[tick] !== "x") {
+                    dmg = walkAttack(hit[tick], player, bgs, defence, slashDef, rangeDef, backUpBgsOn, playerSpec, playerCooldown);
+                    playerCooldown[player] = 5;
+                }
+                hp = hp - dmg;
+
+                player += 1;
+
+                if (player >= scale) {
+                    if (timer % 5 === 0 && bgs.length > 0) {
+                        const bgsSum = bgs.reduce((a, b) => a + b, 0);
+                        const newDefence = Math.min(bgsSum, 100) - 1;
+
+                        bgs.length = 0;
+                        bgs.push(newDefence);
+                    }
+
+                    player = 0;
+                    timer += 1;
+
+                    for (let i = 0; i < scale; i++) {
+                        playerCooldown[i] = Math.max(0, playerCooldown[i] - 1);
+                    }
+                }
+            }
+
+            for (let i = 0; i < scale; i++) {
+                playerSpec[i] += startingSpecs[i];
+            }
+
+            // Calculate downPercent from HP at start of down phase (before downSim modifies it)
+            const downPercent = baseHp > 0 ? Math.round((hp / baseHp) * 10000) / 100 : 0;
+
+            function downSim(timer, hp) {
+                let downTime = 32;
+
+                for (let i = 0; i < 5; i++) {
+                    playerCooldown[i] = Math.max(downDelay[i], playerCooldown[i]);
+                }
+
+                while (hp > 0) {
+                    for (let i = 0; i < scale; i++) {
+                        hp -= downAttack(i, downTime, hp, bgs, defence, slashDef, rangeDef, challyThresh, playerCooldown, playerSpec);
+                    }
+
+                    for (let i = 0; i < 5; i++) {
+                        playerCooldown[i] = Math.max(0, playerCooldown[i] - 1);
+                    }
+
+                    timer += 1;
+                    downTime -= 1;
+
+                    if (timer % 5 === 0 && bgs.length > 0) {
+                        const bgsSum = bgs.reduce((a, b) => a + b, 0);
+                        const newDefence = Math.min(bgsSum, 100) - 1;
+
+                        bgs.length = 0;
+                        bgs.push(newDefence);
+                    }
+
+                    if (downTime === 0) {
+                        bgs.length = 0;
+                    }
+                }
+
+                // Python: if down_time < 0: fails.append(1) else: wins.append(1)
+                // down_time is decremented at end of each iteration, so when loop exits,
+                // down_time has been decremented for the tick where boss died
+                const wins = downTime < 0 ? 0 : 1;
+                const fails = downTime < 0 ? 1 : 0;
+                const onepointoneWins = downTime <= -5 ? 0 : 1;
+                const onepointoneFails = downTime <= -5 ? 1 : 0;
+
+                for (let i = 0; i < 5; i++) {
+                    playerCooldown[i] = 0;
+                }
+
+                timer += 3;
+
+                bgs.length = 0;
+
+                for (let i = 0; i < scale; i++) {
+                    playerSpec[i] = 0;
+                }
+
+                return {
+                    time: Math.round(timer * 0.6 * 100) / 100,
+                    wins: wins,
+                    fails: fails,
+                    onepointoneWins: onepointoneWins,
+                    onepointoneFails: onepointoneFails,
+                    downPercent: downPercent
+                };
+            }
+
+            return downSim(timer, hp);
+        }
+
+        function runSimulation() {
+            const fullCode = document.getElementById('fullCode').value.trim();
+            const minWalk = parseInt(document.getElementById('minWalk').value);
+            const maxWalk = parseInt(document.getElementById('maxWalk').value);
+            const simCount = parseInt(document.getElementById('simCount').value);
+
+            if (!fullCode) {
+                showError('Please enter a code');
+                return;
+            }
+
+            if (minWalk > maxWalk) {
+                showError('Error - min walk larger than max walk');
+                return;
+            }
+
+            showLoading();
+
+            setTimeout(() => {
+                try {
+                    const splitCode = fullCode.split(",");
+
+                    const scale = parseInt(splitCode[0]);
+                    const mode = splitCode[1];
+                    const backUpBgsOn = parseInt(splitCode[2]);
+                    const challyPercent = parseInt(splitCode[3]);
+                    const spec = splitCode[4];
+                    const startingSpecs = spec.split(" ").map(x => parseInt(x));
+                    const onBossDelay = splitCode[5];
+                    const downDelay = onBossDelay.split(" ").map(x => parseInt(x));
+                    const walkHits = splitCode[6].split(" ");
+
+                    const p1Hits = walkHits[0].split("~");
+                    const p2Hits = walkHits[1].split("~");
+                    const p3Hits = walkHits[2].split("~");
+                    const p4Hits = walkHits[3].split("~");
+                    const p5Hits = walkHits[4].split("~");
+
+                    const chart = [p1Hits, p2Hits, p3Hits, p4Hits, p5Hits];
+
+                    const roomTimes = [];
+                    const downHp = [];
+                    let winsCount = 0;
+                    let failsCount = 0;
+                    let onepointoneWinsCount = 0;
+                    let onepointoneFailsCount = 0;
+
+                    // Initialize room times array
+                    let slowestTime = 0;
+                    for (let i = 0; i < 100; i++) {
+                        roomTimes.push(slowestTime);
+                        slowestTime = Math.round((slowestTime + 0.6) * 10) / 10;
+                    }
+
+                    for (let x = 0; x < simCount; x++) {
+                        const result = sim(scale, mode, backUpBgsOn, challyPercent, startingSpecs, downDelay, chart, minWalk, maxWalk);
+                        roomTimes.push(result.time);
+                        // Ensure downPercent is a valid number
+                        const downPercent = isNaN(result.downPercent) || !isFinite(result.downPercent) ? 0 : result.downPercent;
+                        downHp.push(downPercent);
+                        winsCount += result.wins;
+                        failsCount += result.fails;
+                        onepointoneWinsCount += result.onepointoneWins;
+                        onepointoneFailsCount += result.onepointoneFails;
+                    }
+
+                    const avg = roomTimes.reduce((a, b) => a + b, 0) / simCount;
+                    const avgDown = downHp.length > 0 ? downHp.reduce((a, b) => a + b, 0) / downHp.length : 0;
+
+                    // Count frequency
+                    const frequency = {};
+                    for (let time of roomTimes) {
+                        frequency[time] = (frequency[time] || 0) + 1;
+                    }
+
+                    // Format output like Python
+                    let output = '';
+                    const sortedTimes = Object.keys(frequency).map(x => parseFloat(x)).sort((a, b) => a - b);
+                    for (let count of sortedTimes) {
+                        const elem = frequency[count];
+                        output += count + '=' + (elem - 1) + ',\n';
+                    }
+                    output += '+\n';
+                    output += winsCount + ' @ ' + failsCount + ' @ ' + Math.round(avg * 100) / 100 + ' @ ' + Math.round(avgDown * 100) / 100 + ' @ ' + onepointoneWinsCount + ' @ ' + onepointoneFailsCount;
+
+                    showResults(scale, mode, minWalk, maxWalk, avg, avgDown, winsCount, failsCount, onepointoneWinsCount, onepointoneFailsCount, output);
+                } catch (error) {
+                    console.error('Simulation error:', error);
+                    showError('Error running simulation: ' + error.message);
+                }
+            }, 100);
+        }
+
+        function showResults(scale, mode, minWalk, maxWalk, avg, avgDown, wins, fails, onepointoneWins, onepointoneFails, output) {
+            hideLoading();
+
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultsContent');
+
+            // Calculate percentages
+            const total = wins + fails;
+            const winsPercent = total > 0 ? ((wins / total) * 100).toFixed(2) : '0.00';
+            const failsPercent = total > 0 ? ((fails / total) * 100).toFixed(2) : '0.00';
+            const onepointoneTotal = onepointoneWins + onepointoneFails;
+            const onepointoneWinsPercent = onepointoneTotal > 0 ? ((onepointoneWins / onepointoneTotal) * 100).toFixed(2) : '0.00';
+            const onepointoneFailsPercent = onepointoneTotal > 0 ? ((onepointoneFails / onepointoneTotal) * 100).toFixed(2) : '0.00';
+
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Scale</h4>
+                        <div class="stat-value">${scale}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Mode</h4>
+                        <div class="stat-value">${mode}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Min Walk</h4>
+                        <div class="stat-value">${Math.max(minWalk, 39)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Max Walk</h4>
+                        <div class="stat-value">${Math.min(maxWalk, 47)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Average Time</h4>
+                        <div class="stat-value">${avg.toFixed(2)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Average Down %</h4>
+                        <div class="stat-value">${avgDown.toFixed(2)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Wins</h4>
+                        <div class="stat-value">${wins.toLocaleString()}</div>
+                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">${winsPercent}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Fails</h4>
+                        <div class="stat-value">${fails.toLocaleString()}</div>
+                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">${failsPercent}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>1.1 Wins</h4>
+                        <div class="stat-value">${onepointoneWins.toLocaleString()}</div>
+                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">${onepointoneWinsPercent}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>1.1 Fails</h4>
+                        <div class="stat-value">${onepointoneFails.toLocaleString()}</div>
+                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">${onepointoneFailsPercent}%</div>
+                    </div>
+                </div>
+                <div class="output-section">
+                    <pre>${output}</pre>
+                </div>
+            `;
+
+            contentDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            hideLoading();
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultsContent');
+            contentDiv.innerHTML = `<div class="error">${message}</div>`;
+            resultsDiv.style.display = 'block';
+        }
+
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
