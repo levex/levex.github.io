@@ -619,23 +619,21 @@
 
             const downTick = Math.max(Math.min(walk(turnCooldown, minWalk, maxWalk), maxWalk), minWalk);
 
-            // Shuffle chart
-            const scaledChart = [...chart];
+            // Extend chart for scale (Python: chart.append(chart[i]) for i in range(0, scale))
+            const extendedChart = [...chart];
             for (let i = 0; i < scale; i++) {
-                scaledChart.push(chart[i]);
+                extendedChart.push(chart[i]);
             }
-            // Simple shuffle
-            for (let i = scaledChart.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [scaledChart[i], scaledChart[j]] = [scaledChart[j], scaledChart[i]];
-            }
+            // Python shuffles scaled_chart (which is empty), but uses chart[player]
+            // So we'll use extendedChart directly without shuffling
+            const scaledChart = extendedChart;
 
             while (timer !== downTick) {
                 const tick = timer - 1;
                 const hit = scaledChart[player];
 
                 let dmg = 0;
-                if (hit[tick] !== "x") {
+                if (hit && hit[tick] && hit[tick] !== "x") {
                     dmg = walkAttack(hit[tick], player, bgs, defence, slashDef, rangeDef, backUpBgsOn, playerSpec, playerCooldown);
                     playerCooldown[player] = 5;
                 }
@@ -756,14 +754,28 @@
                     const splitCode = fullCode.split(",");
 
                     const scale = parseInt(splitCode[0]);
-                    const mode = splitCode[1];
+                    const mode = splitCode[1].trim();
                     const backUpBgsOn = parseInt(splitCode[2]);
                     const challyPercent = parseInt(splitCode[3]);
-                    const spec = splitCode[4];
-                    const startingSpecs = spec.split(" ").map(x => parseInt(x));
-                    const onBossDelay = splitCode[5];
-                    const downDelay = onBossDelay.split(" ").map(x => parseInt(x));
-                    const walkHits = splitCode[6].split(" ");
+                    const spec = splitCode[4].trim();
+                    // Split on whitespace and filter out empty strings
+                    const startingSpecs = spec.split(/\s+/).filter(x => x).map(x => parseInt(x));
+                    if (startingSpecs.length < 5) {
+                        throw new Error('Invalid code: Not enough starting specs. Expected 5, got ' + startingSpecs.length);
+                    }
+                    const onBossDelay = splitCode[5].trim();
+                    // Split on whitespace and filter out empty strings
+                    const downDelay = onBossDelay.split(/\s+/).filter(x => x).map(x => parseInt(x));
+                    if (downDelay.length < 5) {
+                        throw new Error('Invalid code: Not enough down delays. Expected 5, got ' + downDelay.length);
+                    }
+                    const walkHitsStr = splitCode[6].trim();
+                    // Split on whitespace and filter out empty strings
+                    const walkHits = walkHitsStr.split(/\s+/).filter(x => x);
+
+                    if (walkHits.length < 5) {
+                        throw new Error('Invalid code: Not enough walk hits. Expected 5 players, got ' + walkHits.length);
+                    }
 
                     const p1Hits = walkHits[0].split("~");
                     const p2Hits = walkHits[1].split("~");
