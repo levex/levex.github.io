@@ -121,7 +121,7 @@
             <div id="resultsArea" class="results-area">
                 <div class="input-group">
                     <label for="pythonOut">Input for sheet</label>
-                    <textarea id="pythonOut" class="output-textarea" readonly spellcheck="false" rows="10" aria-label="Python-style simulation output"></textarea>
+                    <textarea id="pythonOut" class="output-textarea" readonly spellcheck="false" rows="10" aria-label="Simulation output for sheet"></textarea>
                     <div class="copy-row">
                         <button type="button" class="btn btn-secondary" id="copyPythonBtn">Copy output</button>
                         <span id="copyFeedback" class="copy-feedback" aria-live="polite"></span>
@@ -168,17 +168,29 @@
         'OOO - Bellator': createGear(58, 108)
     };
 
+    /** Split sheet-style `~` cells; drop empty trailing/blank cells from pastes. */
+    function splitAttackRow(s) {
+        return s
+            .split('~')
+            .map(function (x) {
+                return x.trim();
+            })
+            .filter(function (x) {
+                return x.length > 0;
+            });
+    }
+
     function parseCode(raw) {
         const chart = raw.trim().split('@');
         if (chart.length < 18) {
             throw new Error('Expected at least 18 @-separated fields.');
         }
         const attackChart = [
-            chart[0].split('~'),
-            chart[1].split('~'),
-            chart[2].split('~'),
-            chart[3].split('~'),
-            chart[4].split('~')
+            splitAttackRow(chart[0]),
+            splitAttackRow(chart[1]),
+            splitAttackRow(chart[2]),
+            splitAttackRow(chart[3]),
+            splitAttackRow(chart[4])
         ];
         const scale = parseInt(chart[5], 10);
         if (![1, 2, 3, 4, 5].includes(scale)) {
@@ -571,9 +583,10 @@
     const copyPythonBtn = document.getElementById('copyPythonBtn');
     const copyFeedback = document.getElementById('copyFeedback');
 
-    /** Matches `print(); [print(x) for x in kill_odds_list]` — leading blank line, trailing newline. */
-    function formatPythonStdout(numbers) {
-        return '\n' + numbers.map(String).join('\n') + '\n';
+    /** One odds value per line, trailing newline; no leading blank line. */
+    function formatPythonStdoutForDisplay(numbers) {
+        if (!numbers.length) return '';
+        return numbers.map(String).join('\n') + '\n';
     }
 
     function showError(msg) {
@@ -638,7 +651,7 @@
         setTimeout(function () {
             try {
                 const result = sim(parsed);
-                pythonOut.value = formatPythonStdout(result.numbers);
+                pythonOut.value = formatPythonStdoutForDisplay(result.numbers);
                 summaryOut.value = buildHumanSummary(result).trim();
                 resultsArea.style.display = 'block';
             } catch (e2) {
