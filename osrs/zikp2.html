@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verzik P2 — one down, reds</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #222;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #c0392b 0%, #8e44ad 100%);
+            color: #fff;
+            padding: 28px;
+            text-align: center;
+        }
+        .header h1 { font-size: 1.75em; margin-bottom: 8px; }
+        .header p { opacity: 0.92; font-size: 0.95em; }
+        .content { padding: 28px; }
+        .input-group { margin-bottom: 18px; }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        .input-group textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #8e44ad;
+        }
+        .btn {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #c0392b 0%, #8e44ad 100%);
+            color: #fff;
+        }
+        .btn-primary:hover { filter: brightness(1.05); }
+        .btn-secondary { background: #f1f3f5; color: #333; border: 2px solid #dee2e6; }
+        .results-area {
+            margin-top: 22px;
+            display: none;
+        }
+        .results-area .input-group {
+            margin-bottom: 22px;
+        }
+        textarea.output-textarea {
+            min-height: 140px;
+            max-height: 360px;
+            background: #f8f9fa;
+        }
+        .copy-row {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .copy-feedback {
+            font-size: 0.9em;
+            color: #27ae60;
+            font-weight: 600;
+            min-height: 1.2em;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 16px;
+            border-left: 4px solid #c33;
+        }
+        .hint { font-size: 0.88em; color: #666; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Verzik P2 — one down, reds</h1>
+            <p>Kill odds by HP threshold (matches the Python sim)</p>
+        </div>
+        <div class="content">
+            <div class="input-group">
+                <label for="code">Code (fields separated by <code>@</code>)</label>
+                <textarea id="code" spellcheck="false" placeholder="Paste the full @-separated code string…"></textarea>
+                <p class="hint">Player hit strings use <code>~</code> between attacks. Order: five players, then scale, bounce odds, purple, then gear + attack level for each player (×5).</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="runBtn">Run simulation</button>
+            <button type="button" class="btn btn-secondary" id="clearBtn">Clear output</button>
+            <div id="err" class="error" style="display:none;"></div>
+            <div id="resultsArea" class="results-area">
+                <div class="input-group">
+                    <label for="pythonOut">Input for sheet</label>
+                    <textarea id="pythonOut" class="output-textarea" readonly spellcheck="false" rows="10" aria-label="Python-style simulation output"></textarea>
+                    <div class="copy-row">
+                        <button type="button" class="btn btn-secondary" id="copyPythonBtn">Copy output</button>
+                        <span id="copyFeedback" class="copy-feedback" aria-live="polite"></span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="summaryOut">Summary</label>
+                    <textarea id="summaryOut" class="output-textarea" readonly spellcheck="false" rows="14" aria-label="Human-readable summary"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+(function () {
+    const SLASH_DEF_ROLL = 25916;
+    const RANGE_DEF_ROLL = 65626;
+    const MAGIC_DEF_ROLL = 28006;
+
+    function irandom(a, b) {
+        return Math.floor(Math.random() * (b - a + 1)) + a;
+    }
+
+    function accCheck(accuracy, defenceRoll) {
+        return irandom(0, accuracy) > irandom(0, defenceRoll);
+    }
+
+    function createGear(strBns, accBns) {
+        return {
+            str_bns: strBns,
+            acc_bns: accBns,
+            att_lvl: 0,
+            shadow_max: 68,
+            shadow_acc: 81950,
+            zcb_max: 45,
+            zcb_acc: 32016
+        };
+    }
+
+    const gearMap = {
+        'TOO - Ultor': createGear(66, 78),
+        'TTT - Ultor': createGear(70, 50),
+        'OOO - Ultor': createGear(64, 88),
+        'OOO - Bellator': createGear(58, 108)
+    };
+
+    function parseCode(raw) {
+        const chart = raw.trim().split('@');
+        if (chart.length < 18) {
+            throw new Error('Expected at least 18 @-separated fields.');
+        }
+        const attackChart = [
+            chart[0].split('~'),
+            chart[1].split('~'),
+            chart[2].split('~'),
+            chart[3].split('~'),
+            chart[4].split('~')
+        ];
+        const scale = parseInt(chart[5], 10);
+        if (![1, 2, 3, 4, 5].includes(scale)) {
+            throw new Error('Scale must be 1–5 (field after five player strings).');
+        }
+        const bounceOdds = parseFloat(chart[6]);
+        const purple = parseInt(chart[7], 10);
+        const team = [];
+        for (let i = 0; i < 5; i++) {
+            const g = gearMap[chart[8 + i * 2]];
+            if (!g) throw new Error('Unknown gear: ' + chart[8 + i * 2]);
+            const copy = Object.assign({}, g, { att_lvl: parseInt(chart[9 + i * 2], 10) });
+            team.push(copy);
+        }
+        return { attackChart, scale, bounceOdds, purple, team };
+    }
+
+    function thrall(x) {
+        let ym = 0;
+        let hit = 0;
+        while (ym < x) {
+            hit += irandom(0, 3);
+            ym += 1;
+        }
+        return hit;
+    }
+
+    function makeSimState(team, bounceCheckShared, scale) {
+        return {
+            team,
+            burnStackLimit: [0, 0, 0, 0, 0],
+            burnTicks: [0, 0, 0, 0, 0],
+            bounceCheck: bounceCheckShared,
+            scale
+        };
+    }
+
+    function scythe(state, player, horn) {
+        const t = state.team[player];
+        const weaponStr = 75;
+        const weaponAcc = 125;
+        let maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        let accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
+        const defRoll = SLASH_DEF_ROLL;
+        let hit = 0;
+        for (let splats = 0; splats < 3; splats++) {
+            if (accCheck(accuracy, defRoll) || horn) {
+                hit += Math.max(1, irandom(0, maxHit));
+            }
+            horn = false;
+            maxHit = Math.floor(maxHit / 2);
+        }
+        return hit;
+    }
+
+    function claw(state, player, horn, spec) {
+        const t = state.team[player];
+        const weaponStr = 56;
+        const weaponAcc = 57;
+        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
+        const defRoll = SLASH_DEF_ROLL;
+        let hit = 0;
+        if (spec) {
+            if (accCheck(accuracy, defRoll)) {
+                const splat1 = irandom(Math.floor(maxHit / 2), maxHit - 1);
+                const splat2 = Math.floor(splat1 / 2);
+                const splat3 = Math.floor(splat2 / 2);
+                const splat4 = irandom(splat3, splat3 + 1);
+                hit = splat1 + splat2 + splat3 + splat4;
+            } else if (accCheck(accuracy, defRoll) || horn) {
+                const splat1 = 0;
+                const splat2 = irandom(Math.floor(maxHit * 0.375), Math.floor(maxHit * 0.875));
+                const splat3 = Math.floor(splat2 / 2);
+                const splat4 = irandom(splat3, splat3 + 1);
+                hit = splat1 + splat2 + splat3 + splat4;
+            } else if (accCheck(accuracy, defRoll)) {
+                const splat1 = 0;
+                const splat2 = 0;
+                const splat3 = irandom(Math.floor(maxHit * 0.25), Math.floor(maxHit * 0.75));
+                const splat4 = irandom(splat3, splat3 + 1);
+                hit = splat1 + splat2 + splat3 + splat4;
+            } else if (accCheck(accuracy, defRoll)) {
+                const fourth = irandom(Math.floor(maxHit * 0.25), Math.floor(maxHit * 1.25));
+                hit = fourth;
+            } else if (irandom(0, 1) === 1) {
+                hit += 2;
+            }
+        } else {
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, irandom(0, maxHit));
+            }
+        }
+        return hit;
+    }
+
+    function burningClaw(state, player, horn, spec) {
+        const t = state.team[player];
+        const weaponStr = 32;
+        const weaponAcc = 54;
+        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
+        const defRoll = SLASH_DEF_ROLL;
+        let hit = 0;
+        let splats = 0;
+        let burnChance = 0;
+        let burnStacks = 0;
+        if (spec) {
+            if (accCheck(accuracy, defRoll)) {
+                const damageRoll = irandom(Math.floor(maxHit * 0.75), Math.floor(maxHit * 1.75));
+                hit += Math.floor(damageRoll * 0.5);
+                hit += Math.floor(damageRoll * 0.25);
+                hit += Math.floor(damageRoll * 0.25);
+                splats = 3;
+                burnChance = 0.15;
+            } else if (accCheck(accuracy, defRoll) || horn) {
+                const damageRoll = irandom(Math.floor(maxHit * 0.5), Math.floor(maxHit * 1.5));
+                hit += Math.floor(damageRoll * 0.5) - 1;
+                hit += Math.floor(damageRoll * 0.5) - 1;
+                hit += 2;
+                splats = 2;
+                burnChance = 0.30;
+            } else if (accCheck(accuracy, defRoll)) {
+                const damageRoll = irandom(Math.floor(maxHit * 0.25), Math.floor(maxHit * 1.25));
+                hit += damageRoll - 2;
+                hit += 1;
+                hit += 1;
+                splats = 1;
+                burnChance = 0.45;
+            } else {
+                const lastHitSplat = irandom(0, 4);
+                if (lastHitSplat >= 3) hit += 2;
+                else if (lastHitSplat >= 1) hit += 1;
+            }
+            for (let _ = 0; _ < splats; _++) {
+                if (Math.random() < burnChance) burnStacks += 1;
+            }
+            state.burnStackLimit[player] = Math.min(5, state.burnStackLimit[player]);
+            const burn = Math.max(
+                Math.min(5 - state.burnStackLimit[player], burnStacks) * (8 - state.burnTicks[player]),
+                0
+            );
+            state.burnStackLimit[player] += burnStacks;
+            state.burnTicks[player] += 1;
+            hit += burn;
+        }
+        return hit;
+    }
+
+    function chally(state, player, horn, spec) {
+        const t = state.team[player];
+        const weaponStr = 118;
+        const weaponAcc = 110;
+        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
+        const defRoll = SLASH_DEF_ROLL;
+        let hit = 0;
+        if (spec) {
+            const bonusDamage = Math.floor(maxHit * 0.1);
+            if (accCheck(accuracy, defRoll) || horn) {
+                hit += Math.max(1, irandom(0, maxHit)) + bonusDamage;
+            }
+            if (accCheck(Math.floor(accuracy * 0.75), defRoll)) {
+                hit += Math.max(1, irandom(0, maxHit)) + bonusDamage;
+            }
+        } else {
+            if (accCheck(accuracy, defRoll)) {
+                hit += Math.max(1, irandom(0, maxHit));
+            }
+        }
+        return hit;
+    }
+
+    function nox(state, player, horn) {
+        const t = state.team[player];
+        const weaponStr = 142;
+        const weaponAcc = 132;
+        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
+        const defRoll = SLASH_DEF_ROLL;
+        let hit = 0;
+        if (accCheck(accuracy, defRoll) || horn) {
+            hit += Math.max(1, irandom(0, maxHit));
+        }
+        return hit;
+    }
+
+    function abyDagger(state, player, horn) {
+        const t = state.team[player];
+        const weaponStr = 75;
+        const weaponAcc = 40;
+        let maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        maxHit = Math.floor(maxHit * 0.85);
+        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
+        const defRoll = SLASH_DEF_ROLL;
+        let hit = 0;
+        if (accCheck(accuracy, defRoll) || horn) {
+            hit += Math.max(1, irandom(0, maxHit));
+            hit += Math.max(1, irandom(0, maxHit));
+        }
+        return hit;
+    }
+
+    function zcb(state, player, spec) {
+        const t = state.team[player];
+        const maxHit = t.zcb_max;
+        const accuracy = t.zcb_acc;
+        const defRoll = RANGE_DEF_ROLL;
+        let hit = 0;
+        if (spec) {
+            if (accCheck(accuracy * 2, defRoll)) hit = 110;
+        } else {
+            if (Math.random() < 0.066) hit = 110;
+            else if (accCheck(accuracy, defRoll)) hit = Math.max(1, irandom(0, maxHit));
+        }
+        return hit;
+    }
+
+    function shadow(state, player) {
+        const t = state.team[player];
+        const maxHit = t.shadow_max;
+        const accuracy = t.shadow_acc;
+        const defRoll = MAGIC_DEF_ROLL;
+        let hit = 0;
+        if (accCheck(accuracy, defRoll)) {
+            hit += Math.max(1, irandom(0, maxHit));
+        }
+        return hit;
+    }
+
+    function attack(state, player, atk) {
+        if (atk === 'S') {
+            if (state.bounceCheck[player] === 1) {
+                state.bounceCheck[player] = 0;
+                return zcb(state, player, false);
+            }
+            return scythe(state, player, false);
+        }
+        if (atk === 'S!') return scythe(state, player, true);
+        if (atk === 'C') return claw(state, player, false, true);
+        if (atk === 'C!') return claw(state, player, true, true);
+        if (atk === 'P') return claw(state, player, false, false);
+        if (atk === 'P!') return claw(state, player, false, false);
+        if (atk === 'B') return burningClaw(state, player, false, true);
+        if (atk === 'B!') return burningClaw(state, player, true, true);
+        if (atk === 'H') return chally(state, player, false, true);
+        if (atk === 'H!') return chally(state, player, true, true);
+        if (atk === 'N') return nox(state, player, false);
+        if (atk === 'N!') return nox(state, player, true);
+        if (atk === 'A') return abyDagger(state, player, false);
+        if (atk === 'A!') return abyDagger(state, player, true);
+        if (atk === 'T') return shadow(state, player);
+        if (atk === 'Z') return zcb(state, player, true);
+        return 0;
+    }
+
+    /** Same numeric result as Python `round(x * 100) / 100` for win-rate percentages (2 dp). */
+    function round2FromRatio(wins, sims) {
+        return Math.round((wins / sims) * 100 * 100) / 100;
+    }
+
+    function sim(parsed) {
+        const scaleVariables = { 1: 2625, 2: 2625, 3: 2625, 4: 3062, 5: 3500 };
+        const fullHp = scaleVariables[parsed.scale];
+        const team = parsed.team;
+        const attackChart = parsed.attackChart;
+        const scale = parsed.scale;
+        const bounceOdds = parsed.bounceOdds;
+        const purple = parsed.purple;
+        const bounceCheckShared = [0, 0, 0, 0, 0];
+
+        let maxHp = 35;
+        const minHp = 10;
+        const threshold = Math.floor(fullHp * (minHp / 100));
+        let start = 0;
+        const killOddsList = [];
+        const rows = [];
+
+        while (start !== threshold) {
+            const maxHpPct = maxHp;
+            start = Math.floor(fullHp * (maxHp / 100));
+            let count = 0;
+            let wins = 0;
+            const sims = 10000;
+
+            while (count < sims) {
+                const state = makeSimState(team, bounceCheckShared, scale);
+                let hp = start;
+                hp -= thrall(scale * 7);
+
+                if (purple === 1) {
+                    hp -= irandom(65, 75);
+                }
+
+                let bounce = false;
+                if (Math.random() < bounceOdds) bounce = true;
+                if (bounce) {
+                    const bouncedPlayer = Math.floor(Math.random() * scale);
+                    state.bounceCheck[bouncedPlayer] = 1;
+                }
+
+                for (let player = 0; player < scale; player++) {
+                    for (let hi = 0; hi < attackChart[player].length; hi++) {
+                        const h = attackChart[player][hi];
+                        hp -= attack(state, player, h);
+                    }
+                }
+
+                for (let i = 0; i < scale; i++) {
+                    state.burnTicks[i] = 0;
+                    state.burnStackLimit[i] = 0;
+                }
+
+                if (hp < 1) wins += 1;
+                count += 1;
+            }
+
+            const odds = round2FromRatio(wins, sims);
+            killOddsList.push(odds);
+            rows.push({
+                maxHpPct,
+                startHp: start,
+                odds
+            });
+            maxHp = Math.round((maxHp - 0.5) * 10) / 10;
+        }
+
+        return {
+            numbers: killOddsList,
+            rows,
+            fullHp,
+            threshold,
+            scale,
+            bounceOdds,
+            purple,
+            simsPerRow: 10000
+        };
+    }
+
+    function buildHumanSummary(result) {
+        const lines = [];
+        lines.push('');
+        lines.push('--- Human-readable summary ---');
+        lines.push(
+            'Settings: scale ' +
+                result.scale +
+                ' (boss HP ' +
+                result.fullHp +
+                '), bounce chance ' +
+                result.bounceOdds +
+                ', purple ' +
+                (result.purple === 1 ? 'yes' : 'no') +
+                ', ' +
+                result.simsPerRow +
+                ' Monte Carlo trials per row.'
+        );
+        lines.push('');
+        lines.push('');
+        const c1 = 12;
+        const c2 = 10;
+        lines.push(
+            'Max HP %'.padEnd(c1) + 'Start HP'.padEnd(c2) + 'Kill odds %'
+        );
+        lines.push(''.padEnd(c1 + c2 + 14, '-'));
+        for (let i = 0; i < result.rows.length; i++) {
+            const r = result.rows[i];
+            lines.push(
+                String(r.maxHpPct).padEnd(c1) +
+                    String(r.startHp).padEnd(c2) +
+                    String(r.odds)
+            );
+        }
+        lines.push('');
+        return lines.join('\n');
+    }
+
+    const codeEl = document.getElementById('code');
+    const resultsArea = document.getElementById('resultsArea');
+    const pythonOut = document.getElementById('pythonOut');
+    const summaryOut = document.getElementById('summaryOut');
+    const errEl = document.getElementById('err');
+    const runBtn = document.getElementById('runBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyPythonBtn = document.getElementById('copyPythonBtn');
+    const copyFeedback = document.getElementById('copyFeedback');
+
+    /** Matches `print(); [print(x) for x in kill_odds_list]` — leading blank line, trailing newline. */
+    function formatPythonStdout(numbers) {
+        return '\n' + numbers.map(String).join('\n') + '\n';
+    }
+
+    function showError(msg) {
+        errEl.style.display = 'block';
+        errEl.textContent = msg;
+        resultsArea.style.display = 'none';
+    }
+
+    let copyFeedbackTimer = null;
+    function flashCopyOk() {
+        copyFeedback.textContent = 'Copied.';
+        if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer);
+        copyFeedbackTimer = setTimeout(function () {
+            copyFeedback.textContent = '';
+        }, 2000);
+    }
+
+    function copyPythonOutput() {
+        const text = pythonOut.value;
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(flashCopyOk).catch(function () {
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            flashCopyOk();
+        } finally {
+            document.body.removeChild(ta);
+        }
+    }
+
+    function run() {
+        errEl.style.display = 'none';
+        const raw = codeEl.value;
+        if (!raw.trim()) {
+            showError('Paste a code string first.');
+            return;
+        }
+        let parsed;
+        try {
+            parsed = parseCode(raw);
+        } catch (e) {
+            showError(e.message || String(e));
+            return;
+        }
+        runBtn.disabled = true;
+        runBtn.textContent = 'Running…';
+        setTimeout(function () {
+            try {
+                const result = sim(parsed);
+                pythonOut.value = formatPythonStdout(result.numbers);
+                summaryOut.value = buildHumanSummary(result).trim();
+                resultsArea.style.display = 'block';
+            } catch (e2) {
+                showError(e2.message || String(e2));
+            } finally {
+                runBtn.disabled = false;
+                runBtn.textContent = 'Run simulation';
+            }
+        }, 0);
+    }
+
+    clearBtn.addEventListener('click', function () {
+        pythonOut.value = '';
+        summaryOut.value = '';
+        resultsArea.style.display = 'none';
+        errEl.style.display = 'none';
+        copyFeedback.textContent = '';
+    });
+    copyPythonBtn.addEventListener('click', copyPythonOutput);
+    runBtn.addEventListener('click', run);
+})();
+    </script>
+</body>
+</html>
