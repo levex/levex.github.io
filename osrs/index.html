@@ -1,5 +1,180 @@
-<a href="/osrs/p1.html">P1 Simulator</a><br/>
-<a href="/osrs/isgameup.html">is game up?</a><br/>
-<a href="/osrs/rlver.html">runelite version monitor</a><br/>
-<a href="/osrs/bloat.html">bloat sim</a><br/>
-<a href="/osrs/zikp2.html">Verzik P2 — one down, reds</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSRS Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            color: #fff;
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        header p {
+            color: rgba(255,255,255,0.8);
+            margin-top: 8px;
+            font-size: 1rem;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-label {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 500px) {
+            .grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.8rem; }
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            text-decoration: none;
+            color: inherit;
+            padding: 20px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 32px rgba(0,0,0,0.2);
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-icon img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .card-text h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2d2d4e;
+            margin-bottom: 3px;
+        }
+
+        .card-text p {
+            font-size: 0.78rem;
+            color: #888;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OSRS Tools</h1>
+            <p>A collection of Old School RuneScape utilities</p>
+        </header>
+
+        <div class="section">
+            <div class="section-label">Simulators</div>
+            <div class="grid">
+                <a href="/osrs/p1.html" class="card">
+                    <div class="card-icon">
+                        <img src="https://oldschool.runescape.wiki/images/Dawnbringer_detail.png?f4962" alt="P1">
+                    </div>
+                    <div class="card-text">
+                        <h2>P1 Simulator</h2>
+                        <p>Theatre of Blood P1 simulation</p>
+                    </div>
+                </a>
+
+                <a href="/osrs/bloat.html" class="card">
+                    <div class="card-icon">
+                        <img src="https://oldschool.runescape.wiki/images/Pestilent_Bloat.png?b1ab7" alt="Bloat">
+                    </div>
+                    <div class="card-text">
+                        <h2>Bloat Sim</h2>
+                        <p>Pestilent Bloat walk pattern simulator</p>
+                    </div>
+                </a>
+
+                <a href="/osrs/zikp2.html" class="card">
+                    <div class="card-icon">🩸</div>
+                    <div class="card-text">
+                        <h2>Verzik P2 — 1d Reds</h2>
+                        <p>One-down red crabs phase 2 tool</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">Misc</div>
+            <div class="grid">
+                <a href="/osrs/isgameup.html" class="card">
+                    <div class="card-icon">🟢</div>
+                    <div class="card-text">
+                        <h2>Is Game Up?</h2>
+                        <p>Check if OSRS servers are online</p>
+                    </div>
+                </a>
+
+                <a href="/osrs/rlver.html" class="card">
+                    <div class="card-icon">🔌</div>
+                    <div class="card-text">
+                        <h2>RuneLite Version Monitor</h2>
+                        <p>Track RuneLite client version history</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
