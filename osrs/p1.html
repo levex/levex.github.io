@@ -295,6 +295,12 @@
                         <label for="timerTimeout">Verzik Timeout:</label>
                         <input type="number" id="timerTimeout" value="116" min="50" max="200">
                     </div>
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="replaceClawsWithSulphur">
+                            Replace claw scratches with sulphur blades
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -327,6 +333,7 @@
         const WEAPONS = {
             scythe: { str: 75, atk: 125 },
             claw: { str: 56, atk: 57 },
+            sulphur: { str: 64, atk: 72 },
             swift: { str: 0, atk: 0 }
         };
 
@@ -346,6 +353,7 @@
                 this.weapons = {
                     scythe: { max: [], acc: [], str: 75, atk: 125 },
                     claw: { max: [], acc: [], str: 56, atk: 57 },
+                    sulphur: { max: [], acc: [], str: 64, atk: 72 },
                     swift: { max: [], acc: [], str: 0, atk: 0 }
                 };
                 // Initialize with default team stats
@@ -453,6 +461,23 @@
             return 0;
         }
 
+        function sulphurBlades(player, rolls, teamStats) {
+            const combinedMax = rolls.maxHit(player, 'sulphur', teamStats, [0, 12, 12, 0, 0]);
+            const accRoll = rolls.accRoll(player, 'sulphur', teamStats);
+            const firstHitMax = Math.floor(combinedMax / 2);
+            const secondHitMax = combinedMax - firstHitMax;
+
+            let hit = 0;
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                hit += Math.max(1, verzikRoll(Math.floor(Math.random() * (firstHitMax + 1)), 'Melee'));
+            }
+            if (Math.floor(Math.random() * (accRoll + 1)) > Math.floor(Math.random() * 2437)) {
+                hit += Math.max(1, verzikRoll(Math.floor(Math.random() * (secondHitMax + 1)), 'Melee'));
+            }
+
+            return hit;
+        }
+
         function bp() {
             const maxHit = BP_MAX;
             const accRoll = BP_ACC;
@@ -481,7 +506,7 @@
             return Math.floor(Math.random() * 76) + 75;
         }
 
-        function attack(weapon, player, rolls, teamStats, teamHp) {
+        function attack(weapon, player, rolls, teamStats, teamHp, useSulphurBlades = false) {
             if (weapon === 'ST') {
                 teamHp[player] -= 10;
             }
@@ -496,7 +521,9 @@
                     hit = bp();
                     break;
                 case 'C':
-                    hit = claw(player, rolls, teamStats);
+                    hit = useSulphurBlades
+                        ? sulphurBlades(player, rolls, teamStats)
+                        : claw(player, rolls, teamStats);
                     break;
                 case 'H':
                     hit = swift(player, rolls, teamStats);
@@ -526,7 +553,7 @@
             return hit;
         }
 
-        function p1Sim(hp, fullCode, thrallCount, dawnMax = 21, timerTimeout = 116) {
+        function p1Sim(hp, fullCode, thrallCount, dawnMax = 21, timerTimeout = 116, useSulphurBlades = false) {
             try {
                 console.log('Starting p1Sim with hp:', hp, 'fullCode:', fullCode, 'thrallCount:', thrallCount);
                 
@@ -581,7 +608,7 @@
                     }
                     
                     const weapon = teamHits[player][timer];
-                    const damage = attack(weapon, player, rolls, teamStats, teamHp);
+                    const damage = attack(weapon, player, rolls, teamStats, teamHp, useSulphurBlades);
                     hp -= damage;
                     
                     rolls.pot(player, teamHp, teamStats, potCooldown);
@@ -628,6 +655,7 @@
             const simCount = parseInt(document.getElementById('simCount').value);
             const dawnMax = parseInt(document.getElementById('dawnMax').value);
             const timerTimeout = parseInt(document.getElementById('timerTimeout').value);
+            const useSulphurBlades = document.getElementById('replaceClawsWithSulphur').checked;
 
             if (!fullCode) {
                 showError('Please enter a full_code');
@@ -683,7 +711,7 @@
                         }
                         
                         try {
-                            const result = p1Sim(hp, fullCode, thrallCount, dawnMax, timerTimeout);
+                            const result = p1Sim(hp, fullCode, thrallCount, dawnMax, timerTimeout, useSulphurBlades);
                             if (result > 0) {
                                 killTimes.push(result);
                             }
@@ -714,7 +742,7 @@
                     
                     console.log('Frequency distribution:', frequency);
 
-                    showResults(average, frequency, scale, thrallCount, killTimes.length, dawnMax);
+                    showResults(average, frequency, scale, thrallCount, killTimes.length, dawnMax, useSulphurBlades);
                 } catch (error) {
                     console.error('Simulation error:', error);
                     showError('Error running simulation: ' + error.message);
@@ -722,7 +750,7 @@
             }, 100);
         }
 
-        function showResults(average, frequency, scale, thrallCount, simCount, dawnMax) {
+        function showResults(average, frequency, scale, thrallCount, simCount, dawnMax, useSulphurBlades = false) {
             hideLoading();
             
             const resultsDiv = document.getElementById('results');
@@ -745,6 +773,10 @@
                     <div class="stat-card">
                         <h4>Simulations Run</h4>
                         <div class="stat-value">${simCount.toLocaleString()}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Claw Scratches</h4>
+                        <div class="stat-value">${useSulphurBlades ? 'Sulphur blades' : 'Default claws'}</div>
                     </div>
                 </div>
             `;
