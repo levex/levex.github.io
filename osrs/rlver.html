@@ -446,7 +446,7 @@
 
         // ── Maven tab ─────────────────────────────────────────────────────────
 
-        const MAVEN_URL = 'https://repo.runelite.net/net/runelite/client/maven-metadata.xml';
+        const PROXY_URL = 'https://maven-worked.leventekurusa.workers.dev/';
 
         async function fetchMavenVersions() {
             const loading = document.getElementById('mv-loading');
@@ -462,17 +462,9 @@
 
             try {
                 let text;
-                // Try direct fetch first; fall back to CORS proxy
-                try {
-                    const res = await fetch(MAVEN_URL);
-                    if (!res.ok) throw new Error(`status ${res.status}`);
-                    text = await res.text();
-                } catch (_) {
-                    const proxy = `https://corsproxy.io/?url=${encodeURIComponent(MAVEN_URL)}`;
-                    const res = await fetch(proxy);
-                    if (!res.ok) throw new Error(`Proxy error: ${res.status}`);
-                    text = await res.text();
-                }
+                const res = await fetch(PROXY_URL);
+                if (!res.ok) throw new Error(`status ${res.status}`);
+                text = await res.text();
 
                 const xml = new DOMParser().parseFromString(text, 'text/xml');
                 const versionEls = Array.from(xml.querySelectorAll('versions version'));
