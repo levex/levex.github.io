@@ -1,180 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSRS Tools</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OSRS Sims — xarp.us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f11;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 3rem 1.5rem;
+    }
 
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
+    .card {
+      text-align: center;
+      width: 100%;
+      max-width: 480px;
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
+    .logo {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      margin-bottom: 1.2rem;
+      image-rendering: pixelated;
+    }
 
-        header h1 {
-            color: #fff;
-            font-size: 2.4rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.25);
-        }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
 
-        header p {
-            color: rgba(255,255,255,0.8);
-            margin-top: 8px;
-            font-size: 1rem;
-        }
+    .tagline {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 0.75rem;
+    }
 
-        .section {
-            margin-bottom: 32px;
-        }
+    .back {
+      display: inline-block;
+      margin-bottom: 3rem;
+      font-size: 0.85rem;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
 
-        .section-label {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            padding-left: 4px;
-        }
+    .back:hover { color: #aaa; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
+    .group {
+      margin-bottom: 2.5rem;
+      text-align: left;
+    }
 
-        @media (max-width: 500px) {
-            .grid { grid-template-columns: 1fr; }
-            header h1 { font-size: 1.8rem; }
-        }
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 0.75rem;
+      padding-left: 0.25rem;
+    }
 
-        .card {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            text-decoration: none;
-            color: inherit;
-            padding: 20px 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
+    .group-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
 
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 14px 32px rgba(0,0,0,0.2);
-        }
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      color: #c8c8d0;
+      text-decoration: none;
+      background: transparent;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
 
-        .card-icon {
-            font-size: 1.8rem;
-            flex-shrink: 0;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .item:hover {
+      border-color: #555;
+      color: #fff;
+      background: #1a1a1e;
+    }
 
-        .card-icon img {
-            width: 44px;
-            height: 44px;
-            object-fit: contain;
-        }
+    .item-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
 
-        .card-text h2 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #2d2d4e;
-            margin-bottom: 3px;
-        }
+    .item-icon img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
 
-        .card-text p {
-            font-size: 0.78rem;
-            color: #888;
-            line-height: 1.4;
-        }
-    </style>
+    .item-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .item-name {
+      font-size: 0.9rem;
+      color: inherit;
+    }
+
+    .item-desc {
+      font-size: 0.75rem;
+      color: #555;
+    }
+
+    .item:hover .item-desc {
+      color: #888;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>OSRS Tools</h1>
-            <p>A collection of Old School RuneScape utilities</p>
-        </header>
+  <div class="card">
+    <img class="logo" src="https://oldschool.runescape.wiki/images/Xarpus.png?a39b0" alt="Xarpus" />
+    <h1>xarp.us</h1>
+    <p class="tagline">osrs sims</p>
+    <a class="back" href="/">← back</a>
 
-        <div class="section">
-            <div class="section-label">Simulators</div>
-            <div class="grid">
-                <a href="/osrs/p1.html" class="card">
-                    <div class="card-icon">
-                        <img src="https://oldschool.runescape.wiki/images/Dawnbringer_detail.png?f4962" alt="P1">
-                    </div>
-                    <div class="card-text">
-                        <h2>P1 Simulator</h2>
-                        <p>Theatre of Blood P1 simulation</p>
-                    </div>
-                </a>
-
-                <a href="/osrs/bloat.html" class="card">
-                    <div class="card-icon">
-                        <img src="https://oldschool.runescape.wiki/images/Pestilent_Bloat.png?b1ab7" alt="Bloat">
-                    </div>
-                    <div class="card-text">
-                        <h2>Bloat Sim</h2>
-                        <p>Pestilent Bloat walk pattern simulator</p>
-                    </div>
-                </a>
-
-                <a href="/osrs/zikp2.html" class="card">
-                    <div class="card-icon">🩸</div>
-                    <div class="card-text">
-                        <h2>Verzik P2 — 1d Reds</h2>
-                        <p>One-down red crabs phase 2 tool</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-label">Misc</div>
-            <div class="grid">
-                <a href="/osrs/isgameup.html" class="card">
-                    <div class="card-icon">🟢</div>
-                    <div class="card-text">
-                        <h2>Is Game Up?</h2>
-                        <p>Check if OSRS servers are online</p>
-                    </div>
-                </a>
-
-                <a href="/osrs/rlver.html" class="card">
-                    <div class="card-icon">🔌</div>
-                    <div class="card-text">
-                        <h2>RuneLite Version Monitor</h2>
-                        <p>Track RuneLite client version history</p>
-                    </div>
-                </a>
-            </div>
-        </div>
+    <div class="group">
+      <div class="section-label">Simulators</div>
+      <div class="group-items">
+        <a href="/osrs/p1.html" class="item">
+          <div class="item-icon">
+            <img src="https://oldschool.runescape.wiki/images/Dawnbringer_detail.png?f4962" alt="P1" />
+          </div>
+          <div class="item-text">
+            <span class="item-name">P1 Simulator</span>
+            <span class="item-desc">Theatre of Blood P1 simulation</span>
+          </div>
+        </a>
+        <a href="/osrs/bloat.html" class="item">
+          <div class="item-icon">
+            <img src="https://oldschool.runescape.wiki/images/Pestilent_Bloat.png?b1ab7" alt="Bloat" />
+          </div>
+          <div class="item-text">
+            <span class="item-name">Bloat Sim</span>
+            <span class="item-desc">Pestilent Bloat walk pattern simulator</span>
+          </div>
+        </a>
+        <a href="/osrs/zikp2.html" class="item">
+          <div class="item-icon">🩸</div>
+          <div class="item-text">
+            <span class="item-name">Verzik P2 — 1d Reds</span>
+            <span class="item-desc">One-down red crabs phase 2 tool</span>
+          </div>
+        </a>
+      </div>
     </div>
+
+    <div class="group">
+      <div class="section-label">Misc</div>
+      <div class="group-items">
+        <a href="/osrs/isgameup.html" class="item">
+          <div class="item-icon">🟢</div>
+          <div class="item-text">
+            <span class="item-name">Is Game Up?</span>
+            <span class="item-desc">Check if OSRS servers are online</span>
+          </div>
+        </a>
+        <a href="/osrs/rlver.html" class="item">
+          <div class="item-icon">🔌</div>
+          <div class="item-text">
+            <span class="item-name">RuneLite Version Monitor</span>
+            <span class="item-desc">Track RuneLite client version history</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
