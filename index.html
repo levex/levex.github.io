@@ -22,6 +22,14 @@
       padding: 3rem 4rem;
     }
 
+    .logo {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      margin-bottom: 1.2rem;
+      image-rendering: pixelated;
+    }
+
     h1 {
       font-size: 2.5rem;
       font-weight: 600;
@@ -43,7 +51,7 @@
       align-items: center;
     }
 
-    nav a {
+    nav a, nav button {
       display: inline-block;
       padding: 0.55rem 1.4rem;
       border: 1px solid #2a2a2e;
@@ -51,23 +59,40 @@
       color: #c8c8d0;
       text-decoration: none;
       font-size: 0.9rem;
+      font-family: inherit;
+      background: transparent;
+      cursor: pointer;
       transition: border-color 0.15s, color 0.15s, background 0.15s;
-      min-width: 160px;
+      min-width: 200px;
     }
 
-    nav a:hover {
+    nav a:hover, nav button:hover {
       border-color: #555;
       color: #fff;
       background: #1a1a1e;
+    }
+
+    nav button.coming-soon {
+      border-color: #3a2a3e;
+      color: #a070b0;
+      cursor: default;
+    }
+
+    nav button.coming-soon:hover {
+      border-color: #5a3a6e;
+      color: #c090d0;
+      background: #1a0f1e;
     }
   </style>
 </head>
 <body>
   <div class="card">
+    <img class="logo" src="https://oldschool.runescape.wiki/images/Xarpus.png?a39b0" alt="Xarpus" />
     <h1>xarp.us</h1>
     <p class="tagline">tools &amp; sims</p>
     <nav>
       <a href="/osrs">OSRS Sims</a>
+      <button onclick="this.textContent = this.textContent === 'Coming Soon' ? 'ToB Data/Visualizations' : 'Coming Soon'; this.classList.toggle('coming-soon')">ToB Data/Visualizations</button>
     </nav>
   </div>
 </body>
