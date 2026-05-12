@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ToB Skill Poll · xarp.us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0f0f11;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 2.5rem;
+      font-size: 0.85rem;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .back:hover { color: #aaa; }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 2.5rem;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: #555;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .section {
+      margin-bottom: 2.5rem;
+    }
+
+    .section-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 0.75rem;
+      padding-left: 0.25rem;
+    }
+
+    .items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .item {
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      transition: border-color 0.15s;
+    }
+
+    .item.voted { border-color: #2a2a38; }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .item-label {
+      flex: 1;
+      font-size: 0.875rem;
+      color: #c8c8d0;
+      line-height: 1.4;
+    }
+
+    .vote-buttons {
+      display: flex;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .vote-btn {
+      padding: 0.28rem 0.65rem;
+      border-radius: 5px;
+      border: 1px solid #2a2a2e;
+      background: transparent;
+      color: #555;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .vote-btn:hover { border-color: #444; color: #888; }
+
+    .vote-btn.major:hover:not(.active) {
+      border-color: rgba(229, 78, 78, 0.4);
+      color: rgba(229, 78, 78, 0.6);
+    }
+
+    .vote-btn.minor:hover:not(.active) {
+      border-color: rgba(78, 201, 78, 0.4);
+      color: rgba(78, 201, 78, 0.6);
+    }
+
+    .vote-btn.major.active {
+      background: rgba(229, 78, 78, 0.12);
+      border-color: #e54e4e;
+      color: #e54e4e;
+    }
+
+    .vote-btn.minor.active {
+      background: rgba(78, 201, 78, 0.12);
+      border-color: #4ec94e;
+      color: #4ec94e;
+    }
+
+    .vote-bar-wrap {
+      height: 3px;
+      background: #2a2a2e;
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+      margin-bottom: 0.35rem;
+    }
+
+    .vote-bar-major {
+      height: 100%;
+      background: #e54e4e;
+      transition: width 0.3s ease;
+    }
+
+    .vote-bar-minor {
+      height: 100%;
+      background: #4ec94e;
+      transition: width 0.3s ease;
+    }
+
+    .vote-counts {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+    }
+
+    .major-count { color: rgba(229, 78, 78, 0.5); }
+    .minor-count { color: rgba(78, 201, 78, 0.5); }
+    .no-votes { color: #2a2a2e; }
+
+    #status {
+      font-size: 0.75rem;
+      color: #3a3a42;
+      text-align: center;
+      padding-top: 1.5rem;
+    }
+
+    /* Name gate */
+    #name-gate {
+      max-width: 360px;
+      margin: 6rem auto 0;
+      text-align: center;
+    }
+
+    #name-gate h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #e8e8e8;
+      margin-bottom: 0.5rem;
+    }
+
+    #name-gate p {
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 1.5rem;
+    }
+
+    #name-input {
+      width: 100%;
+      padding: 0.6rem 0.9rem;
+      background: #0f0f11;
+      border: 1px solid #2a2a2e;
+      border-radius: 7px;
+      color: #e8e8e8;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 0.75rem;
+    }
+
+    #name-input:focus { border-color: #4a4a54; }
+
+    #name-submit {
+      width: 100%;
+      padding: 0.6rem;
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 7px;
+      color: #e8e8e8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    #name-submit:hover { border-color: #4a4a54; color: #fff; }
+
+    /* Voter identity strip */
+    #voter-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.78rem;
+      color: #3a3a42;
+    }
+
+    #voter-strip span { color: #555; }
+
+    #change-name-btn {
+      background: none;
+      border: none;
+      color: #3a3a42;
+      font-size: 0.78rem;
+      font-family: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: color 0.15s;
+    }
+
+    #change-name-btn:hover { color: #777; }
+
+    @media (max-width: 480px) {
+      .item-label { font-size: 0.82rem; }
+      .vote-btn { padding: 0.25rem 0.5rem; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="name-gate">
+    <h2>Who are you?</h2>
+    <p>Enter your name before voting. You can change it later.</p>
+    <input id="name-input" type="text" placeholder="Your name" maxlength="40" autocomplete="off" />
+    <button id="name-submit">Continue</button>
+  </div>
+
+  <div class="container" id="poll" style="display:none">
+    <h1>ToB Skill Poll</h1>
+    <p class="subtitle">Vote whether each mechanic is a <strong style="color:#e54e4e">major</strong> or <strong style="color:#4ec94e">minor</strong> skill to master.</p>
+
+    <div id="voter-strip">
+      Voting as <span id="voter-name-label"></span>
+      <button id="change-name-btn">change</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#e54e4e"></div> Major</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ec94e"></div> Minor</div>
+    </div>
+
+    <div id="sections"></div>
+    <div id="status">loading…</div>
+  </div>
+
+  <script>
+    const WORKER_URL = 'https://board-votes.leventekurusa.workers.dev';
+
+    const SECTIONS = [
+      {
+        id: 'maiden', name: 'Maiden',
+        items: [
+          { id: 'maiden_spec',       label: 'Proper spec procedure' },
+          { id: 'maiden_venge',      label: 'Stalling venges / bowing from correct tile for proper spawns' },
+          { id: 'maiden_drained',    label: 'Not getting drained' },
+          { id: 'maiden_hits',       label: 'Not missing hits & staying on tick' },
+          { id: 'maiden_stack_skip', label: 'Proper stack & skip procedure' },
+        ],
+      },
+      {
+        id: 'bloat', name: 'Bloat',
+        items: [
+          { id: 'bloat_spec',        label: 'Proper spec procedure' },
+          { id: 'bloat_1d',          label: '1d procedure' },
+          { id: 'bloat_tick_eating', label: 'Tick eating' },
+          { id: 'bloat_not_dying',   label: 'Not dying' },
+        ],
+      },
+      {
+        id: 'nylo', name: 'Nylocas',
+        items: [
+          { id: 'nylo_spec',       label: 'Proper spec procedure' },
+          { id: 'nylo_rotation',   label: 'Fundamental understanding of your rotation' },
+          { id: 'nylo_cleanup',    label: 'Good clean-up (VOD review)' },
+          { id: 'nylo_cross',      label: 'Properly cross praying & cross switching' },
+        ],
+      },
+      {
+        id: 'sote', name: 'Sotetseg',
+        items: [
+          { id: 'sote_spec',    label: 'Proper spec procedure' },
+          { id: 'sote_backup',  label: 'Back-up in time' },
+          { id: 'sote_maze',    label: 'Running maze with minimal tick loss' },
+          { id: 'sote_off3',    label: 'Off on 3' },
+          { id: 'sote_venge',   label: 'Venge usage (venging on CD & taking venges)' },
+        ],
+      },
+      {
+        id: 'xarpus', name: 'Xarpus',
+        items: [
+          { id: 'xarpus_exhumed', label: 'Exhumed procedure' },
+          { id: 'xarpus_spec',    label: 'Proper spec procedure' },
+          { id: 'xarpus_5tick',   label: '5 ticking' },
+          { id: 'xarpus_22121',   label: '22121' },
+        ],
+      },
+      {
+        id: 'verzik', name: 'Verzik',
+        items: [
+          { id: 'verzik_chart',   label: 'Read and execute a Verzik P1 chart' },
+          { id: 'verzik_p2boak',  label: 'P2 boak' },
+          { id: 'verzik_p2ticks', label: 'P2 not missing unnecessary ticks' },
+          { id: 'verzik_1d_reds', label: '1d reds procedure' },
+          { id: 'verzik_tanking', label: 'Proper tanking (no melees)' },
+          { id: 'verzik_p3boak',  label: 'P3 boak' },
+        ],
+      },
+      {
+        id: 'general', name: 'General',
+        items: [
+          { id: 'general_118_brew', label: 'Hitting on 118 the entire raid and knowing how to brew → SCB' },
+        ],
+      },
+    ];
+
+    function getVoterId() {
+      let id = localStorage.getItem('tob_voter_id');
+      if (!id) { id = crypto.randomUUID(); localStorage.setItem('tob_voter_id', id); }
+      return id;
+    }
+
+    function loadMyVotes() {
+      try { return JSON.parse(localStorage.getItem('tob_my_votes') ?? '{}'); }
+      catch { return {}; }
+    }
+
+    function saveMyVotes(mv) {
+      localStorage.setItem('tob_my_votes', JSON.stringify(mv));
+    }
+
+    function getStoredName() {
+      return localStorage.getItem('tob_voter_name') || '';
+    }
+
+    function saveName(name) {
+      localStorage.setItem('tob_voter_name', name.trim());
+    }
+
+    let allVotes = {};
+    let myVotes = loadMyVotes();
+    const voterId = getVoterId();
+
+    function showPoll() {
+      const name = getStoredName();
+      document.getElementById('name-gate').style.display = 'none';
+      document.getElementById('poll').style.display = '';
+      document.getElementById('voter-name-label').textContent = name;
+    }
+
+    function showNameGate() {
+      document.getElementById('poll').style.display = 'none';
+      const gate = document.getElementById('name-gate');
+      gate.style.display = '';
+      const input = document.getElementById('name-input');
+      input.value = getStoredName();
+      input.focus();
+    }
+
+    function submitName() {
+      const val = document.getElementById('name-input').value.trim();
+      if (!val) return;
+      saveName(val);
+      showPoll();
+      buildUI();
+      loadVotes();
+    }
+
+    document.getElementById('name-submit').addEventListener('click', submitName);
+    document.getElementById('name-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitName();
+    });
+    document.getElementById('change-name-btn').addEventListener('click', showNameGate);
+
+    function renderBar(itemId) {
+      const v = allVotes[itemId] ?? { major: 0, minor: 0 };
+      const total = v.major + v.minor;
+      const majorPct = total ? (v.major / total) * 100 : 0;
+      const minorPct = total ? (v.minor / total) * 100 : 0;
+
+      const barMajor = document.getElementById(`bar-major-${itemId}`);
+      const barMinor = document.getElementById(`bar-minor-${itemId}`);
+      const countMajor = document.getElementById(`count-major-${itemId}`);
+      const countMinor = document.getElementById(`count-minor-${itemId}`);
+      const countNone = document.getElementById(`count-none-${itemId}`);
+
+      if (barMajor) barMajor.style.width = majorPct + '%';
+      if (barMinor) barMinor.style.width = minorPct + '%';
+
+      if (total === 0) {
+        if (countNone) countNone.style.display = '';
+        if (countMajor) countMajor.style.display = 'none';
+        if (countMinor) countMinor.style.display = 'none';
+      } else {
+        if (countNone) countNone.style.display = 'none';
+        if (countMajor) { countMajor.style.display = ''; countMajor.textContent = `${v.major} major`; }
+        if (countMinor) { countMinor.style.display = ''; countMinor.textContent = `${v.minor} minor`; }
+      }
+    }
+
+    function renderButtons(itemId) {
+      const my = myVotes[itemId];
+      const btnMajor = document.getElementById(`btn-major-${itemId}`);
+      const btnMinor = document.getElementById(`btn-minor-${itemId}`);
+      const item = document.getElementById(`item-${itemId}`);
+      if (btnMajor) btnMajor.classList.toggle('active', my === 'major');
+      if (btnMinor) btnMinor.classList.toggle('active', my === 'minor');
+      if (item) item.classList.toggle('voted', !!my);
+    }
+
+    async function vote(itemId, v) {
+      // Optimistic update
+      const prev = myVotes[itemId];
+      const prevVotes = { ...(allVotes[itemId] ?? { major: 0, minor: 0 }) };
+
+      if (prev) prevVotes[prev] = Math.max(0, prevVotes[prev] - 1);
+
+      if (v !== prev) {
+        prevVotes[v]++;
+        myVotes[itemId] = v;
+      } else {
+        delete myVotes[itemId];
+      }
+
+      allVotes[itemId] = prevVotes;
+      saveMyVotes(myVotes);
+      renderBar(itemId);
+      renderButtons(itemId);
+
+      try {
+        const res = await fetch(`${WORKER_URL}/votes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId, vote: v, voterId, name: getStoredName() }),
+        });
+        const updated = await res.json();
+        allVotes = updated;
+        renderBar(itemId);
+      } catch {
+        // server unreachable — optimistic state stays
+      }
+    }
+
+    function buildUI() {
+      const container = document.getElementById('sections');
+      if (container.hasChildNodes()) return;
+      for (const section of SECTIONS) {
+        const sec = document.createElement('div');
+        sec.className = 'section';
+        sec.innerHTML = `<div class="section-label">${section.name}</div><div class="items" id="items-${section.id}"></div>`;
+        container.appendChild(sec);
+
+        const itemsEl = sec.querySelector('.items');
+        for (const item of section.items) {
+          const my = myVotes[item.id];
+          const el = document.createElement('div');
+          el.className = `item${my ? ' voted' : ''}`;
+          el.id = `item-${item.id}`;
+          el.innerHTML = `
+            <div class="item-row">
+              <span class="item-label">${item.label}</span>
+              <div class="vote-buttons">
+                <button class="vote-btn major${my === 'major' ? ' active' : ''}" id="btn-major-${item.id}">MAJOR</button>
+                <button class="vote-btn minor${my === 'minor' ? ' active' : ''}" id="btn-minor-${item.id}">MINOR</button>
+              </div>
+            </div>
+            <div class="vote-bar-wrap">
+              <div class="vote-bar-major" id="bar-major-${item.id}" style="width:0%"></div>
+              <div class="vote-bar-minor" id="bar-minor-${item.id}" style="width:0%"></div>
+            </div>
+            <div class="vote-counts">
+              <span class="major-count" id="count-major-${item.id}" style="display:none"></span>
+              <span class="no-votes" id="count-none-${item.id}">no votes yet</span>
+              <span class="minor-count" id="count-minor-${item.id}" style="display:none"></span>
+            </div>
+          `;
+          el.querySelector(`#btn-major-${item.id}`).addEventListener('click', () => vote(item.id, 'major'));
+          el.querySelector(`#btn-minor-${item.id}`).addEventListener('click', () => vote(item.id, 'minor'));
+          itemsEl.appendChild(el);
+        }
+      }
+    }
+
+    async function loadVotes() {
+      try {
+        const res = await fetch(`${WORKER_URL}/votes`);
+        allVotes = await res.json();
+        document.getElementById('status').textContent = '';
+      } catch {
+        document.getElementById('status').textContent = 'Could not load vote counts — worker may not be deployed yet.';
+      }
+      for (const section of SECTIONS) {
+        for (const item of section.items) {
+          renderBar(item.id);
+        }
+      }
+    }
+
+    if (getStoredName()) {
+      showPoll();
+      buildUI();
+      loadVotes();
+    } else {
+      showNameGate();
+    }
+  </script>
+</body>
+</html>
