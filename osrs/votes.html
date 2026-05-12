@@ -269,6 +269,136 @@
 
     #change-name-btn:hover { color: #777; }
 
+    /* Overview section */
+    .overview-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 2.5rem;
+    }
+
+    .overview-toggle .section-label {
+      margin-bottom: 0;
+    }
+
+    .overview-toggle-chevron {
+      font-size: 0.6rem;
+      color: #3a3a42;
+      transition: transform 0.2s;
+    }
+
+    .overview-toggle-chevron.open { transform: rotate(90deg); }
+
+    #overview-body { display: none; margin-bottom: 2.5rem; }
+    #overview-body.open { display: block; }
+
+    .overview-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .overview-section-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 0.6rem;
+      padding-left: 0.25rem;
+    }
+
+    .overview-item {
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .overview-item-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+
+    .overview-item-label {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #c8c8d0;
+      line-height: 1.4;
+    }
+
+    .verdict-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 0.22rem 0.55rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .verdict-badge.major {
+      background: rgba(229, 78, 78, 0.12);
+      border: 1px solid #e54e4e;
+      color: #e54e4e;
+    }
+
+    .verdict-badge.minor {
+      background: rgba(78, 201, 78, 0.12);
+      border: 1px solid #4ec94e;
+      color: #4ec94e;
+    }
+
+    .verdict-badge.tied {
+      background: rgba(232, 184, 78, 0.1);
+      border: 1px solid rgba(232, 184, 78, 0.4);
+      color: #e8b84e;
+    }
+
+    .verdict-badge.no-votes-badge {
+      background: transparent;
+      border: 1px solid #2a2a2e;
+      color: #3a3a42;
+    }
+
+    .overview-voter-list {
+      display: none;
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid #1e1e22;
+    }
+
+    .overview-voter-list.open { display: block; }
+
+    .overview-voter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.2rem 0;
+      font-size: 0.75rem;
+    }
+
+    .overview-voter-name { color: #666; }
+
+    .overview-voter-vote {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .overview-voter-vote.major { color: #e54e4e; }
+    .overview-voter-vote.minor { color: #4ec94e; }
+
+    .overview-expand-hint {
+      font-size: 0.6rem;
+      color: #2a2a2e;
+      flex-shrink: 0;
+      margin-left: 0.4rem;
+    }
+
     @media (max-width: 480px) {
       .item-label { font-size: 0.82rem; }
       .vote-btn { padding: 0.25rem 0.5rem; font-size: 0.65rem; }
@@ -296,6 +426,12 @@
       <div class="legend-item"><div class="legend-dot" style="background:#e54e4e"></div> Major</div>
       <div class="legend-item"><div class="legend-dot" style="background:#4ec94e"></div> Minor</div>
     </div>
+
+    <div class="overview-toggle" id="overview-toggle">
+      <div class="section-label">Overview</div>
+      <span class="overview-toggle-chevron" id="overview-chevron">▶</span>
+    </div>
+    <div id="overview-body"></div>
 
     <div id="sections"></div>
     <div id="status">loading…</div>
@@ -395,6 +531,7 @@
     }
 
     let allVotes = {};
+    let allVoters = {};
     let myVotes = loadMyVotes();
     const voterId = getVoterId();
 
@@ -493,6 +630,11 @@
         const updated = await res.json();
         allVotes = updated;
         renderBar(itemId);
+        // Refresh voter data and overview after a successful vote
+        fetch(`${WORKER_URL}/voters`).then(r => r.json()).then(data => {
+          allVoters = data;
+          renderOverview();
+        }).catch(() => {});
       } catch {
         // server unreachable — optimistic state stays
       }
@@ -540,8 +682,12 @@
 
     async function loadVotes() {
       try {
-        const res = await fetch(`${WORKER_URL}/votes`);
-        allVotes = await res.json();
+        const [votesRes, votersRes] = await Promise.all([
+          fetch(`${WORKER_URL}/votes`),
+          fetch(`${WORKER_URL}/voters`),
+        ]);
+        allVotes = await votesRes.json();
+        allVoters = await votersRes.json();
         document.getElementById('status').textContent = '';
       } catch {
         document.getElementById('status').textContent = 'Could not load vote counts — worker may not be deployed yet.';
@@ -551,7 +697,87 @@
           renderBar(item.id);
         }
       }
+      renderOverview();
     }
+
+    function verdict(itemId) {
+      const v = allVotes[itemId];
+      if (!v || (v.major === 0 && v.minor === 0)) return 'none';
+      if (v.major > v.minor) return 'major';
+      if (v.minor > v.major) return 'minor';
+      return 'tied';
+    }
+
+    function renderOverview() {
+      const body = document.getElementById('overview-body');
+      body.innerHTML = '';
+
+      for (const section of SECTIONS) {
+        const secEl = document.createElement('div');
+        secEl.className = 'overview-section';
+        secEl.innerHTML = `<div class="overview-section-label">${section.name}</div>`;
+
+        for (const item of section.items) {
+          const v = verdict(item.id);
+          const vData = allVotes[item.id] ?? { major: 0, minor: 0 };
+          const total = vData.major + vData.minor;
+
+          const badgeClass = v === 'none' ? 'no-votes-badge' : v;
+          const badgeText = v === 'none' ? 'no votes' : v === 'tied' ? 'tied' : v.toUpperCase();
+
+          // Collect voter rows for this item
+          const voterRows = Object.values(allVoters)
+            .filter(voter => voter.votes && voter.votes[item.id])
+            .map(voter => {
+              const voteVal = voter.votes[item.id];
+              return `<div class="overview-voter-row">
+                <span class="overview-voter-name">${escHtml(voter.name)}</span>
+                <span class="overview-voter-vote ${voteVal}">${voteVal.toUpperCase()}</span>
+              </div>`;
+            }).join('');
+
+          const hasVoters = voterRows.length > 0;
+          const countStr = total > 0 ? `${vData.major}M / ${vData.minor}m` : '';
+
+          const itemEl = document.createElement('div');
+          itemEl.className = 'overview-item';
+          itemEl.innerHTML = `
+            <div class="overview-item-header">
+              <span class="overview-item-label">${item.label}</span>
+              ${countStr ? `<span style="font-size:0.65rem;color:#444;flex-shrink:0">${countStr}</span>` : ''}
+              <span class="verdict-badge ${badgeClass}">${badgeText}</span>
+              ${hasVoters ? `<span class="overview-expand-hint">▶</span>` : ''}
+            </div>
+            ${hasVoters ? `<div class="overview-voter-list">${voterRows}</div>` : ''}
+          `;
+
+          if (hasVoters) {
+            const header = itemEl.querySelector('.overview-item-header');
+            const list = itemEl.querySelector('.overview-voter-list');
+            const hint = itemEl.querySelector('.overview-expand-hint');
+            header.addEventListener('click', () => {
+              const open = list.classList.toggle('open');
+              hint.style.transform = open ? 'rotate(90deg)' : '';
+            });
+          }
+
+          secEl.appendChild(itemEl);
+        }
+
+        body.appendChild(secEl);
+      }
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    document.getElementById('overview-toggle').addEventListener('click', () => {
+      const body = document.getElementById('overview-body');
+      const chevron = document.getElementById('overview-chevron');
+      const open = body.classList.toggle('open');
+      chevron.classList.toggle('open', open);
+    });
 
     if (getStoredName()) {
       showPoll();
