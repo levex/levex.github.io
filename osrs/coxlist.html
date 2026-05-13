@@ -346,6 +346,17 @@
 
     <div class="meta-section">
       <div class="meta-field">
+        <label for="input-watcher">Watcher</label>
+        <input id="input-watcher" type="text" placeholder="Your name" />
+      </div>
+      <div class="meta-field">
+        <label for="input-raiders">Raiders</label>
+        <input id="input-raiders" type="text" placeholder="Comma-separated names" />
+      </div>
+    </div>
+
+    <div class="meta-section">
+      <div class="meta-field">
         <label for="input-name">Name</label>
         <input id="input-name" type="text" placeholder="Zezima" />
       </div>
@@ -456,6 +467,8 @@
     function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          watcher: document.getElementById('input-watcher').value,
+          raiders: document.getElementById('input-raiders').value,
           name: document.getElementById('input-name').value,
           role: document.getElementById('input-role').value,
           state,
@@ -468,6 +481,8 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return false;
         const saved = JSON.parse(raw);
+        document.getElementById('input-watcher').value = saved.watcher || '';
+        document.getElementById('input-raiders').value = saved.raiders || '';
         document.getElementById('input-name').value = saved.name || '';
         document.getElementById('input-role').value = saved.role || '';
         for (const boss of BOSSES) {
@@ -645,6 +660,8 @@
     }
 
     function buildMarkdown() {
+      const watcher = document.getElementById('input-watcher').value.trim();
+      const raiders = document.getElementById('input-raiders').value.trim();
       const name = document.getElementById('input-name').value.trim() || 'Unknown';
       const role = document.getElementById('input-role').value.trim();
       const header = role ? `${name} - ${role}` : name;
@@ -661,6 +678,9 @@
         });
         lines.push('');
       }
+
+      if (watcher) lines.push(`Watcher: ${watcher}`);
+      if (raiders) lines.push(`Raiders: ${raiders}`);
 
       return lines.join('\n').trimEnd();
     }
@@ -694,6 +714,8 @@
     function resetAll() {
       if (!confirm('Reset all statuses and notes? This cannot be undone.')) return;
       blankState();
+      document.getElementById('input-watcher').value = '';
+      document.getElementById('input-raiders').value = '';
       document.getElementById('input-name').value = '';
       document.getElementById('input-role').value = '';
       buildChecklist();
@@ -705,6 +727,8 @@
     buildChecklist();
     updatePreview();
 
+    document.getElementById('input-watcher').addEventListener('input', onChange);
+    document.getElementById('input-raiders').addEventListener('input', onChange);
     document.getElementById('input-name').addEventListener('input', onChange);
     document.getElementById('input-role').addEventListener('input', onChange);
   </script>
