@@ -77,6 +77,22 @@
 
     .meta-field input:focus { border-color: #4a4a54; }
 
+    .meta-field textarea {
+      background: #0f0f11;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #e8e8e8;
+      font-size: 0.9rem;
+      padding: 0.45rem 0.7rem;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+    }
+    .meta-field textarea:focus { border-color: #4a4a54; }
+    .meta-field textarea::placeholder { color: #4a4a54; }
+
     .boss-section {
       background: #16161a;
       border: 1px solid #2a2a2e;
@@ -368,6 +384,13 @@
 
     <div id="checklist"></div>
 
+    <div class="meta-section" style="margin-top: 0.75rem;">
+      <div class="meta-field">
+        <label for="input-general-notes">General Notes</label>
+        <textarea id="input-general-notes" placeholder="Overall observations or feedback…"></textarea>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn primary" id="copy-btn" onclick="copyMd()">Copy to clipboard</button>
       <button class="btn secondary" onclick="exportMd()">Export .md</button>
@@ -471,6 +494,7 @@
           raiders: document.getElementById('input-raiders').value,
           name: document.getElementById('input-name').value,
           role: document.getElementById('input-role').value,
+          generalNotes: document.getElementById('input-general-notes').value,
           state,
         }));
       } catch (_) {}
@@ -485,6 +509,7 @@
         document.getElementById('input-raiders').value = saved.raiders || '';
         document.getElementById('input-name').value = saved.name || '';
         document.getElementById('input-role').value = saved.role || '';
+        document.getElementById('input-general-notes').value = saved.generalNotes || '';
         for (const boss of BOSSES) {
           if (!saved.state[boss.id]) continue;
           boss.items.forEach((_, idx) => {
@@ -672,10 +697,17 @@
         lines.push(`### ${boss.name}`);
         boss.items.forEach((item, idx) => {
           const { r1, r2, notes } = state[boss.id][idx];
-          const status = r1 === r2 ? r1 : `${r1}/${r2}`;
+          const status = (r1 === 'N/A' && r2 === 'N/A') ? 'N/A' : (r1 === r2 ? r1 : `${r1}/${r2}`);
           lines.push(`${item}, ${status}`);
           notes.forEach(n => { if (n.trim()) lines.push(`- ${n.trim()}`); });
         });
+        lines.push('');
+      }
+
+      const generalNotes = document.getElementById('input-general-notes').value.trim();
+      if (generalNotes) {
+        lines.push('### Overall Notes');
+        lines.push(generalNotes);
         lines.push('');
       }
 
@@ -718,6 +750,7 @@
       document.getElementById('input-raiders').value = '';
       document.getElementById('input-name').value = '';
       document.getElementById('input-role').value = '';
+      document.getElementById('input-general-notes').value = '';
       buildChecklist();
       onChange();
     }
@@ -731,6 +764,7 @@
     document.getElementById('input-raiders').addEventListener('input', onChange);
     document.getElementById('input-name').addEventListener('input', onChange);
     document.getElementById('input-role').addEventListener('input', onChange);
+    document.getElementById('input-general-notes').addEventListener('input', onChange);
   </script>
 </body>
 </html>
