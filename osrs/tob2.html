@@ -345,6 +345,28 @@
     .dot-xarpus { background: #4e9ce8; }
     .dot-verzik { background: #ae4ee8; }
 
+    .room-notes-area {
+      padding: 0.6rem 1.25rem 0.75rem;
+      border-top: 1px solid #1e1e22;
+    }
+
+    .room-notes-input {
+      width: 100%;
+      background: #0f0f11;
+      border: 1px solid #1e1e22;
+      border-radius: 5px;
+      color: #e8e8e8;
+      font-size: 0.78rem;
+      padding: 0.35rem 0.6rem;
+      outline: none;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 52px;
+    }
+
+    .room-notes-input:focus { border-color: #2a2a2e; }
+    .room-notes-input::placeholder { color: #3a3a42; }
+
     @media (max-width: 520px) {
       .meta-section { flex-direction: column; }
       .check-label { font-size: 0.8rem; }
@@ -509,10 +531,12 @@
     const STATUSES = ['✅', '❌', 'N/A'];
 
     const state = {};
+    const roomNotes = {};
 
     function blankState() {
       for (const boss of BOSSES) {
         state[boss.id] = boss.items.map(() => ({ r1: 'N/A', r2: 'N/A', notes: [] }));
+        roomNotes[boss.id] = '';
       }
     }
 
@@ -524,6 +548,7 @@
           name: document.getElementById('input-name').value,
           role: document.getElementById('input-role').value,
           generalNotes: document.getElementById('input-general-notes').value,
+          roomNotes,
           state,
         }));
       } catch (_) {}
@@ -548,6 +573,7 @@
             state[boss.id][idx].r2 = STATUSES.includes(s.r2) ? s.r2 : 'N/A';
             state[boss.id][idx].notes = Array.isArray(s.notes) ? s.notes : (s.notes ? [s.notes] : []);
           });
+          if (saved.roomNotes) roomNotes[boss.id] = saved.roomNotes[boss.id] || '';
         }
         return true;
       } catch (_) {
@@ -587,6 +613,17 @@
         boss.items.forEach((item, idx) => {
           section.appendChild(buildItem(boss, idx, item));
         });
+
+        const rnArea = document.createElement('div');
+        rnArea.className = 'room-notes-area';
+        const rnInput = document.createElement('textarea');
+        rnInput.className = 'room-notes-input';
+        rnInput.id = `room-notes-${boss.id}`;
+        rnInput.placeholder = 'Room notes…';
+        rnInput.value = roomNotes[boss.id] || '';
+        rnInput.addEventListener('input', e => { roomNotes[boss.id] = e.target.value; onChange(); });
+        rnArea.appendChild(rnInput);
+        section.appendChild(rnArea);
 
         container.appendChild(section);
       }
@@ -730,6 +767,8 @@
           lines.push(`${item}, ${status}`);
           notes.forEach(n => { if (n.trim()) lines.push(`- ${n.trim()}`); });
         });
+        const rn = (roomNotes[boss.id] || '').trim();
+        if (rn) { lines.push(''); lines.push(rn); }
         lines.push('');
       }
 
