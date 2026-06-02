@@ -734,7 +734,8 @@
         lines.push(`### ${boss.name}`);
         boss.items.forEach((item, idx) => {
           const { r1, r2, notes } = state[boss.id][idx];
-          const status = (r1 === 'N/A' && r2 === 'N/A') ? 'N/A' : (r1 === r2 ? r1 : `${r1}/${r2}`);
+          const eff1 = r1 === 'N/A' ? null : r1, eff2 = r2 === 'N/A' ? null : r2;
+          const status = (!eff1 && !eff2) ? 'N/A' : (!eff2 ? eff1 : (!eff1 ? eff2 : (eff1 === eff2 ? eff1 : `${eff1}/${eff2}`)));
           lines.push(`${item}, ${status}`);
           notes.forEach(n => { if (n.trim()) lines.push(`- ${n.trim()}`); });
         });
