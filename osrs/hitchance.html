@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hit Chance Diff — xarp.us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f11;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 3rem 1.5rem;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 0.75rem;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 2.5rem;
+      font-size: 0.85rem;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .back:hover { color: #aaa; }
+
+    .section {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 0.75rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .labeled-input {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+    }
+
+    .input-label {
+      font-size: 0.72rem;
+      color: #555;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #e8e8e8;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]::placeholder { color: #3a3a42; }
+
+    input[type="number"]:focus { border-color: #555; }
+
+    .diff-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.5rem;
+    }
+
+    .diff-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .diff-input-wrap input {
+      padding-right: 2.2rem;
+    }
+
+    .diff-unit {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      color: #555;
+      pointer-events: none;
+    }
+
+    .input-hint {
+      font-size: 0.72rem;
+      color: #3a3a42;
+      margin-top: 0.4rem;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1a1a1e;
+      margin: 1.75rem 0;
+    }
+
+    .result-box {
+      padding: 1rem 1.1rem;
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      min-height: 3.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.55rem;
+    }
+
+    .result-empty {
+      font-size: 0.8rem;
+      color: #2a2a2e;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+    }
+
+    .result-key {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #444;
+      min-width: 5.5rem;
+    }
+
+    .result-val {
+      font-size: 1rem;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      color: #e8e8e8;
+    }
+
+    .result-val.positive { color: #4caf7d; }
+    .result-val.negative { color: #c0392b; }
+    .result-val.neutral  { color: #888; }
+
+    .result-divider {
+      border: none;
+      border-top: 1px solid #1f1f23;
+      margin: 0.2rem 0;
+    }
+
+    .error {
+      font-size: 0.82rem;
+      color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Hit Chance Diff</h1>
+    <p class="tagline">see how a roll change affects hit chance</p>
+    <a class="back" href="/misc/">← back</a>
+
+    <div class="section">
+      <div class="section-label">Rolls</div>
+      <div class="input-row">
+        <div class="labeled-input">
+          <span class="input-label">Attack roll</span>
+          <input type="number" id="attackRoll" placeholder="e.g. 24000" min="0" />
+        </div>
+        <div class="labeled-input">
+          <span class="input-label">Defence roll</span>
+          <input type="number" id="defenceRoll" placeholder="e.g. 18000" min="0" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Attack Roll Modifier</div>
+      <div class="diff-row">
+        <div class="labeled-input diff-input-wrap">
+          <input type="number" id="diffPct" placeholder="e.g. 50 or -20" />
+          <span class="diff-unit">%</span>
+        </div>
+      </div>
+      <div class="input-hint">Percentage change applied to the attack roll — positive to increase, negative to decrease</div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="result-box" id="result">
+      <span class="result-empty">enter rolls above to calculate</span>
+    </div>
+  </div>
+
+  <script>
+    function hitChance(attackRoll, defenceRoll) {
+      if (attackRoll > defenceRoll) {
+        return 1 - (defenceRoll + 1) / (2 * (attackRoll + 1));
+      } else {
+        return attackRoll / (2 * (defenceRoll + 1));
+      }
+    }
+
+    function fmt(pct) {
+      return pct.toFixed(2) + '%';
+    }
+
+    function fmtDiff(delta) {
+      const sign = delta >= 0 ? '+' : '';
+      return sign + delta.toFixed(2) + ' pp';
+    }
+
+    function calculate() {
+      const attackVal = document.getElementById('attackRoll').value.trim();
+      const defenceVal = document.getElementById('defenceRoll').value.trim();
+      const diffVal = document.getElementById('diffPct').value.trim();
+      const box = document.getElementById('result');
+
+      if (attackVal === '' || defenceVal === '') {
+        box.innerHTML = '<span class="result-empty">enter rolls above to calculate</span>';
+        return;
+      }
+
+      const attack = parseInt(attackVal, 10);
+      const defence = parseInt(defenceVal, 10);
+
+      if (isNaN(attack) || isNaN(defence) || attack < 0 || defence < 0) {
+        box.innerHTML = '<span class="error">Attack and defence rolls must be non-negative integers</span>';
+        return;
+      }
+
+      const oldChance = hitChance(attack, defence) * 100;
+      let rows = `<div class="result-row"><span class="result-key">Old</span><span class="result-val">${fmt(oldChance)}</span></div>`;
+
+      if (diffVal !== '') {
+        const diff = parseFloat(diffVal);
+        if (isNaN(diff)) {
+          box.innerHTML = '<span class="error">Modifier must be a number (e.g. 50 or -20)</span>';
+          return;
+        }
+
+        const newAttack = Math.floor(attack * (1 + diff / 100));
+        const newChance = hitChance(newAttack, defence) * 100;
+        const delta = newChance - oldChance;
+        const deltaClass = delta > 0 ? 'positive' : delta < 0 ? 'negative' : 'neutral';
+
+        rows += `<hr class="result-divider" />`;
+        rows += `<div class="result-row"><span class="result-key">New roll</span><span class="result-val">${newAttack.toLocaleString()}</span></div>`;
+        rows += `<div class="result-row"><span class="result-key">New</span><span class="result-val">${fmt(newChance)}</span></div>`;
+        rows += `<div class="result-row"><span class="result-key">Change</span><span class="result-val ${deltaClass}">${fmtDiff(delta)}</span></div>`;
+      }
+
+      box.innerHTML = rows;
+    }
+
+    ['attackRoll', 'defenceRoll', 'diffPct'].forEach(id => {
+      document.getElementById(id).addEventListener('input', calculate);
+    });
+  </script>
+</body>
+</html>
