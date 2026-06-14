@@ -148,12 +148,17 @@
         <div class="kv"><span>SW tile (x,y)</span><b id="swTxt">0, 0</b></div>
         <div class="kv"><span>Centre tile (x,y)</span><b id="ctTxt">2, 2</b></div>
         <div class="kv"><span>Loop offset / edge</span><b id="edgeTxt">0 · bottom (corner)</b></div>
+        <div class="kv" style="margin-top:0.5rem;border-top:1px solid var(--line);padding-top:0.6rem">
+          <span>Flinchable downs</span><b id="flinchTxt">—</b></div>
+        <div class="kv"><span>Odds of flinchable</span><b id="flinchOdds">—</b></div>
+        <p class="note" style="margin-top:0.4rem">A down is flinchable unless Bloat is on a corner or one tile off it. Odds = chance Bloat's first down lands on a flinchable tile.</p>
       </div>
 
       <div class="panel" id="invPanel" style="display:none">
         <h2>Investigate tile</h2>
         <div class="kv"><span>Tile</span><b id="invSw"></b></div>
         <div class="kv"><span>Down chance</span><b id="invProb"></b></div>
+        <div class="kv"><span>Flinch</span><b id="invFlinch">—</b></div>
         <div id="invTicks"></div>
       </div>
 
@@ -211,6 +216,15 @@ function edgeName(o){
   o=((o%L)+L)%L;
   let base = o<=11?'bottom': o<=22?'right': o<=33?'top':'left';
   return CORNERS.has(o) ? base+' (corner)' : base;
+}
+
+// ---- flinch classification ----
+// Simplification: a down is flinchable unless Bloat is exactly on a corner or one tile
+// off it in either direction. Corners sit at loop offsets 0/11/22/33 (every 11 tiles),
+// so the non-flinchable band is r in {0,1,10} where r = offset mod 11.
+function isFlinchable(o){
+  const r = (((o%L)+L)%L) % 11;
+  return r!==0 && r!==1 && r!==10;
 }
 
 // ---- mechanics constants ----
@@ -408,6 +422,9 @@ function updateInvestigate(mass){
   const tot=ticks.reduce((s,[,p])=>s+p,0);
   const probEl=document.getElementById('invProb');
   probEl.textContent = tot>1e-9 ? (tot*100).toFixed(2)+'%' : '0% — cannot go down here';
+  const fl=isFlinchable(selOffset), fEl=document.getElementById('invFlinch');
+  fEl.textContent = fl ? '✓ flinchable' : '✗ not flinchable';
+  fEl.style.color = fl ? 'var(--accent)' : 'var(--down)';
   const fmt=p=> (p*100)>=0.01 ? (p*100).toFixed(2)+'%' : '<0.01%';
   document.getElementById('invTicks').innerHTML = ticks.length
     ? `<div class="note" style="margin:6px 0 4px">Possible walk ticks (${ticks.length}):</div>`+
@@ -422,6 +439,12 @@ function updatePanel(results){
   document.getElementById('swTxt').textContent = `${sw.x}, ${sw.y}`;
   document.getElementById('ctTxt').textContent = `${c.x}, ${c.y}`;
   document.getElementById('edgeTxt').textContent = `${start} · ${edgeName(start)}`;
+  // flinch overview: count of flinchable down tiles + the chance Bloat's first down lands
+  // on one of them (sum of those tiles' down odds).
+  let flinchMass=0, nTot=0, nFlinch=0;
+  for (const r of results){ nTot++; if (isFlinchable(r.offset)){ flinchMass+=r.prob; nFlinch++; } }
+  document.getElementById('flinchTxt').textContent = nTot ? `${nFlinch}/${nTot} tiles` : '—';
+  document.getElementById('flinchOdds').textContent = nFlinch ? `${(flinchMass*100).toFixed(1)}%` : '—';
   const tb=document.getElementById('rows'); tb.innerHTML='';
   const maxP=Math.max(...results.map(r=>r.prob),0.0001);
   const shown=results.filter(r=>r.prob>=0.005);
