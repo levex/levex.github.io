@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToB Bloat Walk Simulator</title>
+<style>
+  /* CSS variables drive both the page chrome and the canvas renderer
+     (read via getCss() in the script), mapped to the site dark theme. */
+  :root{
+    --bg:#0f0f11; --panel:#16161a; --ink:#e8e8e8; --muted:#888;
+    --line:#2a2a2e; --accent:#4ec94e; --blocked:#1f1f24; --walk:#16161a;
+    --start:#2ee6ff; --down:#e54e4e; --corner:#e8b84e; --gate:#37c9a6; --wall:#4a4a54;
+    --label:#3a3a42;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;
+    padding:2rem 1.5rem 4rem}
+  .wrap{max-width:1024px;margin:0 auto}
+  a.back{display:inline-block;margin-bottom:2rem;font-size:0.85rem;color:#444;
+    text-decoration:none;transition:color 0.15s}
+  a.back:hover{color:#aaa}
+  header{margin-bottom:1.75rem}
+  h1{font-size:1.8rem;font-weight:600;letter-spacing:-0.03em;color:#fff;margin-bottom:0.25rem}
+  .sub{color:#555;font-size:0.85rem}
+  .sub b{color:#aaa;font-weight:600}
+  .layout{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .left{flex:0 0 auto}
+  .right{flex:1 1 320px;min-width:300px}
+  canvas{background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    cursor:crosshair;touch-action:none;max-width:100%}
+  .controls{margin-top:16px;display:flex;flex-direction:column;gap:1.1rem}
+  .controls h2{margin-bottom:0}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .field-block{display:flex;flex-direction:column;gap:0.5rem}
+  .ctrl-label{font-size:0.67rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6a6a72}
+  .ctrl-label .dim{font-weight:400;letter-spacing:0;text-transform:none;color:#4a4a52;margin-left:0.4rem}
+  .toggle{display:flex;align-items:center;justify-content:flex-start;gap:0.7rem;cursor:pointer;
+    background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:0.65rem 0.8rem;
+    font-size:0.82rem;color:#d2d2d2;transition:border-color 0.15s}
+  .toggle:hover{border-color:#3a3a42}
+  .toggle input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .toggle .dim{color:#555}
+  .track{position:relative;box-sizing:border-box;flex-shrink:0;width:42px;height:24px;
+    border-radius:12px;background:#26262b;border:1px solid #3a3a42;
+    transition:background 0.18s,border-color 0.18s}
+  .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#6a6a72;transition:transform 0.18s,background 0.18s}
+  .toggle input:checked + .track{background:rgba(78,201,78,0.22);border-color:var(--accent)}
+  .toggle input:checked + .track .knob{transform:translateX(18px);background:var(--accent)}
+  .toggle input:focus-visible + .track{box-shadow:0 0 0 3px rgba(78,201,78,0.3)}
+  .hint{font-size:0.74rem;color:#666;line-height:1.55;border-top:1px solid var(--line);padding-top:0.9rem}
+  .hint b{color:#aaa;font-weight:600}
+  .seg.full{display:flex;width:100%}
+  .seg.full button{flex:1}
+  label{font-size:0.78rem;color:#666}
+  input[type=range]{flex:1;min-width:160px;accent-color:var(--accent)}
+  input[type=number]{width:64px;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:6px;padding:0.4rem 0.55rem;outline:none}
+  input[type=number]:focus{border-color:#4a4a54}
+  button{background:#202028;color:#dadada;border:1px solid #36363f;
+    border-radius:6px;padding:0.4rem 0.7rem;cursor:pointer;font-size:0.8rem;
+    transition:border-color 0.15s,color 0.15s,background 0.15s}
+  button:hover{border-color:#5a5a66;background:#2a2a33;color:#fff}
+  .seg{display:inline-flex;border:1px solid #36363f;border-radius:6px;overflow:hidden}
+  .seg button{border:none;border-radius:0;border-right:1px solid #36363f}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--accent);color:#08140a;font-weight:600}
+  .seg button.on:hover{color:#08140a}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:1.25rem;margin-bottom:1rem}
+  .panel h2{font-size:0.67rem;font-weight:700;margin-bottom:0.85rem;color:var(--label);
+    text-transform:uppercase;letter-spacing:2px}
+  table{width:100%;border-collapse:collapse;font-size:0.82rem}
+  th,td{text-align:left;padding:0.4rem 0.45rem;border-bottom:1px solid var(--line)}
+  th{color:#666;font-weight:500}
+  td.pct{font-variant-numeric:tabular-nums}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#1d1d22}
+  tbody tr.sel{background:#23231a;box-shadow:inset 2px 0 0 var(--corner)}
+  tbody tr.sel td{color:#fff}
+  .bar{height:8px;background:var(--down);border-radius:2px;display:inline-block;vertical-align:middle}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:0.72rem;color:#666;margin-top:12px}
+  .chip{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-right:5px}
+  .note{font-size:0.72rem;color:#555}
+  .kv{display:flex;justify-content:space-between;gap:12px;font-size:0.82rem;padding:0.15rem 0}
+  .kv span{color:#666}
+  .kv b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/osrs/">← back</a>
+  <header>
+    <h1>Bloat Walk Sim</h1>
+    <p class="sub">Set where Bloat is when you start the room. The sim shows every tile it can go down on for the <b>first down</b>.</p>
+  </header>
+
+  <div class="layout">
+    <div class="left">
+      <canvas id="cv" width="584" height="584"></canvas>
+      <div class="panel controls">
+        <h2>Configuration</h2>
+
+        <div class="field-block">
+          <label class="ctrl-label" for="slider">Start position <span class="dim">loop tile 0–43</span></label>
+          <div class="row">
+            <button id="stepBack" title="Step back">◀</button>
+            <input type="range" id="slider" min="0" max="43" value="0">
+            <input type="number" id="num" min="0" max="43" value="0">
+            <button id="stepFwd" title="Step forward">▶</button>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label class="ctrl-label">Initial direction</label>
+          <div class="seg full" id="dirSeg">
+            <button data-dir="1" class="on">CCW (+)</button>
+            <button data-dir="-1">CW (−)</button>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label class="ctrl-label">Movement</label>
+          <label class="toggle">
+            <input type="checkbox" id="allowTurns" checked>
+            <span class="track"><span class="knob"></span></span>
+            <span>Allow turns</span>
+          </label>
+        </div>
+
+        <div class="field-block">
+          <label class="ctrl-label">Left-click action</label>
+          <div class="seg full" id="modeSeg">
+            <button data-mode="start" class="on">Set start</button>
+            <button data-mode="investigate">Investigate</button>
+          </div>
+        </div>
+
+        <p class="hint"><b>Set start</b> — click or ←/→ to place the Bloat. <b>Investigate</b> — click or ←/→ a tile to read its down odds &amp; ticks.</p>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="panel">
+        <h2>Start</h2>
+        <div class="kv"><span>SW tile (x,y)</span><b id="swTxt">0, 0</b></div>
+        <div class="kv"><span>Centre tile (x,y)</span><b id="ctTxt">2, 2</b></div>
+        <div class="kv"><span>Loop offset / edge</span><b id="edgeTxt">0 · bottom (corner)</b></div>
+      </div>
+
+      <div class="panel" id="invPanel" style="display:none">
+        <h2>Investigate tile</h2>
+        <div class="kv"><span>Tile</span><b id="invSw"></b></div>
+        <div class="kv"><span>Down chance</span><b id="invProb"></b></div>
+        <div id="invTicks"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Possible downs</h2>
+        <div class="row" style="margin-bottom:10px">
+          <label>Walk tick</label>
+          <input type="number" id="tmin" min="39" max="90" value="39"> –
+          <input type="number" id="tmax" min="39" max="90" value="90">
+          <button id="treset">all</button>
+          <span class="seg" id="presetSeg">
+            <button data-lo="39" data-hi="44">39–44</button>
+            <button data-lo="47" data-hi="47">47</button>
+          </span>
+        </div>
+        <table>
+          <thead><tr><th>SW (x,y)</th><th>Centre</th><th>Ticks</th><th>Chance</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="legend">
+          <span><span class="chip" style="background:var(--start)"></span>Start + initial direction</span>
+          <span><span class="chip" style="background:var(--down)"></span>Down tile (opacity ∝ chance)</span>
+          <span><span class="chip" style="background:var(--blocked)"></span>Vat (centre)</span>
+          <span><span class="chip" style="background:var(--gate)"></span>Gate (W/E middle 4)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const L = 44;                       // loop length (tiles)
+const CORNERS = new Set([0,11,22,33]);
+const ROOM = 16, CELL = 32, M = 36; // canvas margin (room for compass labels)
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+let start = 0;   // loop offset of Bloat at room start (tick 0)
+let dir = 1;     // +1 = increasing offset, -1 = decreasing
+let selOffset = null; // loop tile of the down row currently selected (for highlight)
+let tickMin = 39, tickMax = 90; // filter: only count downs on these walk ticks
+let allowTurns = true;          // if false, the Bloat never reverses direction
+let mode = 'start';             // left-click / arrow-key mode: 'start' or 'investigate'
+
+// ---- geometry ----
+function offsetToSW(o){
+  o = ((o % L) + L) % L;
+  if (o <= 11) return {x:o,      y:0};        // bottom edge
+  if (o <= 22) return {x:11,     y:o-11};     // right edge
+  if (o <= 33) return {x:33-o,   y:11};       // top edge
+  return            {x:0,      y:44-o};       // left edge
+}
+const swToCentre = sw => ({x:sw.x+2, y:sw.y+2});
+function edgeName(o){
+  o=((o%L)+L)%L;
+  let base = o<=11?'bottom': o<=22?'right': o<=33?'top':'left';
+  return CORNERS.has(o) ? base+' (corner)' : base;
+}
+
+// ---- mechanics constants ----
+const TURN_P    = 1/16;       // chance to REVERSE patrol direction, each eligible tick
+const TURN_LOCK = 32;         // no turns for the first 32 ticks, AND for 32 ticks after a turn
+const CD_LEN    = 5;          // a turn applies a 5-tick down-cooldown
+const DOWN_P    = 0.25;       // 1/4 chance to go down per tick once window is open
+const WIN_OPEN  = 39, WIN_END = 47;   // ticks 39..46 roll 1/4; tick 47 forces the down
+const HORIZON   = 60;         // sim bound; the down always resolves well before this
+
+// ---- core simulation: first down (exact probability DP) ----
+// Each tick the Bloat walks 1 tile. It can REVERSE direction with chance 1/16, but only
+// once it's past tick 32, not within 32 ticks of a previous turn, AND no later than tick 46
+// (the last tick it can turn). A reversal applies a 5t cooldown that pauses the down check
+// and delays the forced down. Because the 32t turn cooldown is longer than the whole window,
+// at most ONE turn affects a given first down, so the down can be delayed by at most one
+// 5t cooldown — a turn on tick 46 pushes the forced down to its latest possible: tick 51.
+// State carries `turned` (1 once a turn has happened) — within HORIZON that is equivalent
+// to the 32t turn lockout, since a second turn could not re-enable until tick >= 64.
+function simulate(startOffset, dir0){
+  const key=(p,d,c,h)=>p+','+d+','+c+','+h;
+  let states = new Map([[key(startOffset,dir0,0,0),1]]);
+  // mass[offset] = Map(downTick -> probability) — keeps the tick so downs can be filtered
+  const mass = Array.from({length:L},()=>new Map());
+  const downByTick = {};
+  const add=(m,k,p)=>m.set(k,(m.get(k)||0)+p);
+  const rec=(off,t,p)=>{ add(mass[off],t,p); downByTick[t]=(downByTick[t]||0)+p; };
+  let lastT=HORIZON;
+  for (let t=1; t<=HORIZON && states.size; t++){
+    lastT=t;
+    const next = new Map();
+    for (const [k,p] of states){
+      const a=k.split(','); const pos=+a[0], dir=+a[1], cd0=+a[2], turned=+a[3];
+      const moved=((pos+dir)%L+L)%L;
+      const cdDec=Math.max(0,cd0-1);
+      const canTurn = (t>=TURN_LOCK && t<WIN_END && allowTurns && !turned);  // last turn is tick 46
+      const branches = canTurn
+        ? [{p:moved,d:-dir,c:CD_LEN,h:1,w:TURN_P},{p:moved,d:dir,c:cdDec,h:0,w:1-TURN_P}]
+        : [{p:moved,d:dir,c:cdDec,h:turned,w:1}];
+      for (const b of branches){
+        const pw=p*b.w, active=b.c>0;
+        if (t<WIN_OPEN || active){            // pre-window, or cooled down -> stay up
+          add(next,key(b.p,b.d,b.c,b.h),pw);
+        } else if (t<WIN_END){                // ticks 39..46 -> 1/4 chance down
+          rec(b.p,t,pw*DOWN_P);
+          add(next,key(b.p,b.d,b.c,b.h),pw*(1-DOWN_P));
+        } else {                              // tick 47+ with no cooldown -> forced down
+          rec(b.p,t,pw);
+        }
+      }
+    }
+    states=next;
+  }
+  for (const [k,p] of states) rec(+k.split(',')[0], lastT, p);  // flush (negligible)
+  return {mass, downByTick};
+}
+
+// Aggregate the per-tick mass into one row per tile, keeping only downs whose
+// walk tick lies in [tmin,tmax]. prob = P(down on this tile within that tick range).
+function buildResults(mass, tmin, tmax){
+  const results=[];
+  for (let o=0;o<L;o++){
+    let p=0; const ticks=[];
+    for (const [t,pr] of mass[o]) if (t>=tmin && t<=tmax){ p+=pr; ticks.push([t,pr]); }
+    if (p>1e-6){ const sw=offsetToSW(o), c=swToCentre(sw);
+      // drop the negligible long tail: keep ticks worth >=0.5% of this tile's downs
+      const sig = ticks.filter(x=>x[1] >= 0.005*p).sort((a,b)=>a[0]-b[0]);
+      results.push({offset:o, sw, centre:c, prob:p, ticks:sig}); }
+  }
+  results.sort((a,b)=>b.prob-a.prob);
+  return results;
+}
+
+// Collapse a tile's down ticks into a compact list, e.g. "39–41, 46"
+function fmtTicks(ticks){
+  const ts=ticks.map(x=>x[0]);
+  const parts=[]; let s=ts[0], prev=ts[0];
+  for (let i=1;i<ts.length;i++){
+    if (ts[i]===prev+1){ prev=ts[i]; }
+    else { parts.push(s===prev?`${s}`:`${s}–${prev}`); s=prev=ts[i]; }
+  }
+  parts.push(s===prev?`${s}`:`${s}–${prev}`);
+  return parts.join(', ');
+}
+
+// ---- drawing (rotated 90° CW so North points right) ----
+// North index (tile y) -> screen X (right);  East index (tile x) -> screen Y (down)
+function tlx(ty){ return M + ty*CELL; }            // screen-left of cell from North index
+function tly(tx){ return M + tx*CELL; }            // screen-top  of cell from East  index
+function ctr(tx,ty){ return [tlx(ty)+CELL/2, tly(tx)+CELL/2]; }   // cell centre (px)
+
+function footprint(sw, fill, stroke, lw){
+  const left = tlx(sw.y), top = tly(sw.x), s = 5*CELL;
+  if (fill){ ctx.fillStyle=fill; ctx.fillRect(left,top,s,s); }
+  if (stroke){ ctx.strokeStyle=stroke; ctx.lineWidth=lw||2; ctx.strokeRect(left+0.5,top+0.5,s-1,s-1); }
+}
+
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const G = ROOM*CELL;
+  // floor
+  ctx.fillStyle = getCss('--walk'); ctx.fillRect(M,M,G,G);
+  // grid
+  ctx.strokeStyle = getCss('--line'); ctx.lineWidth=1;
+  for (let i=0;i<=ROOM;i++){
+    ctx.beginPath(); ctx.moveTo(M+i*CELL,M); ctx.lineTo(M+i*CELL,M+G); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(M,M+i*CELL); ctx.lineTo(M+G,M+i*CELL); ctx.stroke();
+  }
+  // room border
+  ctx.strokeStyle = getCss('--wall'); ctx.lineWidth=3;
+  ctx.strokeRect(M+1.5, M+1.5, G-3, G-3);
+  // blocked centre (East/North 5..10)
+  ctx.fillStyle = getCss('--blocked');
+  ctx.fillRect(tlx(5),tly(5),6*CELL,6*CELL);
+  ctx.strokeStyle = '#000'; ctx.strokeRect(tlx(5)+0.5,tly(5)+0.5,6*CELL-1,6*CELL-1);
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle = getCss('--muted'); ctx.font='11px -apple-system,system-ui,sans-serif';
+  ctx.fillText('vat', M+G/2, M+G/2);
+
+  // compass markers (N right, S left, E bottom, W top)
+  ctx.fillStyle = getCss('--accent'); ctx.font='bold 16px -apple-system,system-ui,sans-serif';
+  ctx.fillText('N', M+G+18, M+G/2);
+  ctx.fillText('S', M-18,   M+G/2);
+  ctx.fillText('E', M+G/2,  M+G+18);
+  ctx.fillText('W', M+G/2,  M-18);
+  ctx.textBaseline='alphabetic';
+
+  const sim = simulate(start, dir);
+  const results = buildResults(sim.mass, tickMin, tickMax);
+  const maxP = Math.max(...results.map(r=>r.prob), 0.0001);
+
+  // down footprints (heatmap by probability)
+  for (const r of results){
+    const a = 0.12 + 0.68*(r.prob/maxP);
+    footprint(r.sw, `rgba(229,78,78,${a})`, 'rgba(229,78,78,0.5)', 1);
+  }
+  // probability labels (only where there's room to read them)
+  ctx.textAlign='center';
+  for (const r of results){
+    if (r.prob < 0.012) continue;
+    const [X,Y]=ctr(r.centre.x,r.centre.y);
+    ctx.font='bold 10px -apple-system,system-ui,sans-serif'; ctx.fillStyle='#fff';
+    ctx.fillText(Math.round(r.prob*100)+'%', X, Y+3);
+  }
+
+  // start footprint + initial-direction arrow
+  footprint(offsetToSW(start), 'rgba(46,230,255,0.16)', getCss('--start'), 3.5);
+  const sc = swToCentre(offsetToSW(start)); const [SXc,SYc]=ctr(sc.x,sc.y);
+  const nc = swToCentre(offsetToSW(((start+dir)%L+L)%L)); const [NXc,NYc]=ctr(nc.x,nc.y);
+  let vx=NXc-SXc, vy=NYc-SYc; const vl=Math.hypot(vx,vy)||1; vx/=vl; vy/=vl;
+  // Offset the arrow off the tile-centre line (toward the wall the Bloat hugs) so it doesn't
+  // overlap the down % labels, which all sit on that centre line.
+  const roomC = M + ROOM*CELL/2;
+  let px=-vy, py=vx;
+  if (px*(SXc-roomC) + py*(SYc-roomC) < 0){ px=-px; py=-py; }   // point outward, toward the wall
+  const ox=SXc+px*CELL*1.4, oy=SYc+py*CELL*1.4;
+  const bx=ox-vx*CELL*1.4, by=oy-vy*CELL*1.4;                   // tail
+  const ax=ox+vx*CELL*1.4, ay=oy+vy*CELL*1.4;                   // tip
+  ctx.strokeStyle=getCss('--start'); ctx.lineWidth=3.5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ax,ay); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ax,ay);
+  ctx.lineTo(ax-vx*11-vy*7, ay-vy*11+vx*7); ctx.lineTo(ax-vx*11+vy*7, ay-vy*11-vx*7);
+  ctx.closePath(); ctx.fillStyle=getCss('--start'); ctx.fill();
+  ctx.lineCap='butt';
+
+  // selected / investigated tile emphasis (works even for 0% tiles)
+  if (selOffset!=null){
+    const r = results.find(x=>x.offset===selOffset);
+    const sw = r ? r.sw : offsetToSW(selOffset);
+    footprint(sw, r?'rgba(255,255,255,0.14)':'rgba(255,255,255,0.04)', '#fff', r?3:1.5);
+    const c = swToCentre(sw); const [X,Y]=ctr(c.x,c.y);
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X,Y,CELL*0.45,0,7); ctx.stroke();
+    ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.font='bold 12px -apple-system,system-ui,sans-serif';
+    ctx.fillText(r?(r.prob*100).toFixed(1)+'%':'0%', X, Y-CELL*0.6);
+  }
+
+  // gate: middle 4 tiles of the West (top) and East (bottom) walls, drawn on top of the heatmap
+  ctx.strokeStyle = getCss('--gate'); ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(tlx(6), M+2);     ctx.lineTo(tlx(10), M+2);     ctx.stroke();  // West
+  ctx.beginPath(); ctx.moveTo(tlx(6), M+G-2);   ctx.lineTo(tlx(10), M+G-2);   ctx.stroke();  // East
+
+  updatePanel(results);
+  updateInvestigate(sim.mass);
+}
+
+// Investigate readout: full odds + every possible down tick for the selected tile
+function updateInvestigate(mass){
+  const panel=document.getElementById('invPanel');
+  if (selOffset==null){ panel.style.display='none'; return; }
+  panel.style.display='';
+  const sw=offsetToSW(selOffset), c=swToCentre(sw);
+  document.getElementById('invSw').textContent=`${sw.x}, ${sw.y}  ·  centre ${c.x}, ${c.y}  ·  ${edgeName(selOffset)}`;
+  const m=mass[selOffset]||new Map();
+  const ticks=[...m.entries()].filter(([t])=>t>=tickMin&&t<=tickMax).sort((a,b)=>a[0]-b[0]);
+  const tot=ticks.reduce((s,[,p])=>s+p,0);
+  const probEl=document.getElementById('invProb');
+  probEl.textContent = tot>1e-9 ? (tot*100).toFixed(2)+'%' : '0% — cannot go down here';
+  const fmt=p=> (p*100)>=0.01 ? (p*100).toFixed(2)+'%' : '<0.01%';
+  document.getElementById('invTicks').innerHTML = ticks.length
+    ? `<div class="note" style="margin:6px 0 4px">Possible walk ticks (${ticks.length}):</div>`+
+      ticks.map(([t,p])=>`<div class="kv"><span>tick ${t}</span><b>${fmt(p)}</b></div>`).join('')
+    : '<div class="note" style="margin-top:6px">No down possible on this tile in the selected walk-tick range.</div>';
+}
+
+function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function updatePanel(results){
+  const sw=offsetToSW(start), c=swToCentre(sw);
+  document.getElementById('swTxt').textContent = `${sw.x}, ${sw.y}`;
+  document.getElementById('ctTxt').textContent = `${c.x}, ${c.y}`;
+  document.getElementById('edgeTxt').textContent = `${start} · ${edgeName(start)}`;
+  const tb=document.getElementById('rows'); tb.innerHTML='';
+  const maxP=Math.max(...results.map(r=>r.prob),0.0001);
+  const shown=results.filter(r=>r.prob>=0.005);
+  for (const r of shown){
+    const tr=document.createElement('tr');
+    if (r.offset===selOffset) tr.className='sel';
+    const pct=(r.prob*100);
+    tr.innerHTML = `<td>${r.sw.x}, ${r.sw.y}</td>`+
+      `<td>${r.centre.x}, ${r.centre.y}</td>`+
+      `<td>${fmtTicks(r.ticks)}</td>`+
+      `<td class="pct">${pct<1?pct.toFixed(1):Math.round(pct)}%</td>`+
+      `<td><span class="bar" style="width:${Math.max(4,60*r.prob/maxP)}px"></span></td>`;
+    tr.title='Click to show this tile on the map';
+    tr.addEventListener('click',()=>{ selOffset = (selOffset===r.offset? null : r.offset); draw(); });
+    tb.appendChild(tr);
+  }
+}
+
+// ---- input ----
+function setStart(o){
+  start=((o%L)+L)%L;
+  selOffset=null;
+  document.getElementById('slider').value=start;
+  document.getElementById('num').value=start;
+  draw();
+}
+document.getElementById('slider').addEventListener('input',e=>setStart(+e.target.value));
+document.getElementById('num').addEventListener('input',e=>setStart(+e.target.value||0));
+document.getElementById('stepFwd').addEventListener('click',()=>setStart(start+1));
+document.getElementById('stepBack').addEventListener('click',()=>setStart(start-1));
+document.querySelectorAll('#dirSeg button').forEach(b=>b.addEventListener('click',()=>{
+  dir=+b.dataset.dir; selOffset=null;
+  document.querySelectorAll('#dirSeg button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); draw();
+}));
+function nearestOffset(e){
+  const r=cv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(cv.width/r.width);
+  const my=(e.clientY-r.top)*(cv.height/r.height);
+  let best=0,bd=1e9;
+  for(let o=0;o<L;o++){ const c=swToCentre(offsetToSW(o)); const [X,Y]=ctr(c.x,c.y);
+    const d=(X-mx)**2+(Y-my)**2; if(d<bd){bd=d;best=o;} }
+  return best;
+}
+function investigate(o){ selOffset=((o%L)+L)%L; draw(); }
+cv.addEventListener('click',e=>{
+  const o=nearestOffset(e);
+  if (mode==='investigate') investigate(o); else setStart(o);
+});
+
+document.getElementById('allowTurns').addEventListener('change',e=>{
+  allowTurns=e.target.checked; selOffset=null; draw();
+});
+
+// left-click mode toggle
+document.querySelectorAll('#modeSeg button').forEach(b=>b.addEventListener('click',()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  cv.style.cursor = mode==='investigate' ? 'help' : 'crosshair';
+}));
+
+// ---- arrow keys: move start, or move the investigated tile ----
+window.addEventListener('keydown',e=>{
+  if (e.target.tagName==='INPUT') return;      // don't hijack typing in fields
+  if (e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+  const delta = e.key==='ArrowLeft' ? -1 : 1;
+  if (mode==='investigate') investigate((selOffset==null?start:selOffset)+delta);
+  else setStart(start+delta);
+  e.preventDefault();
+});
+
+// ---- down-tick filter ----
+function setFilter(){
+  let lo = Math.round(+document.getElementById('tmin').value);
+  let hi = Math.round(+document.getElementById('tmax').value);
+  if (!Number.isFinite(lo)) lo=39;
+  if (!Number.isFinite(hi)) hi=90;
+  tickMin=Math.min(lo,hi); tickMax=Math.max(lo,hi);
+  draw();
+}
+document.getElementById('tmin').addEventListener('input',setFilter);
+document.getElementById('tmax').addEventListener('input',setFilter);
+document.getElementById('treset').addEventListener('click',()=>{
+  document.getElementById('tmin').value=39; document.getElementById('tmax').value=90; setFilter();
+});
+document.querySelectorAll('#presetSeg button').forEach(b=>b.addEventListener('click',()=>{
+  document.getElementById('tmin').value=b.dataset.lo;
+  document.getElementById('tmax').value=b.dataset.hi;
+  setFilter();
+}));
+
+draw();
+</script>
+</body>
+</html>
