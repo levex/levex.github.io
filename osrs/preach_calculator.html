@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preach Calculator — xarp.us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      background: #0f0f11;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 3rem 1.5rem;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 0.75rem;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 2.5rem;
+      font-size: 0.85rem;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .back:hover { color: #aaa; }
+
+    .section {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 0.75rem;
+    }
+
+    .toggle-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 0.6rem 0.85rem;
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #888;
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .toggle-btn:hover { border-color: #555; color: #ccc; }
+
+    .toggle-btn.active {
+      border-color: #4caf7d;
+      color: #4caf7d;
+      background: #16221c;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1a1a1e;
+      margin: 1.75rem 0;
+    }
+
+    .scenario {
+      border: 1px solid #2a2a2e;
+      border-radius: 10px;
+      padding: 1.1rem 1.1rem 1.3rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .scenario-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .scenario-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #888;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #555;
+      font-size: 0.75rem;
+      font-family: inherit;
+      cursor: pointer;
+      padding: 0.3rem 0.55rem;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .icon-btn:hover { border-color: #c0392b; color: #c0392b; }
+
+    .icon-btn.add {
+      width: 100%;
+      padding: 0.55rem;
+      color: #4caf7d;
+      border-color: #24382e;
+      font-size: 0.8rem;
+    }
+
+    .icon-btn.add:hover { border-color: #4caf7d; }
+
+    .sub-label {
+      font-size: 0.72rem;
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+
+    .event-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .labeled-input {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+    }
+
+    .input-label {
+      font-size: 0.72rem;
+      color: #555;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      background: #0f0f11;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #e8e8e8;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]::placeholder { color: #3a3a42; }
+
+    input[type="number"]:focus { border-color: #555; }
+
+    .remove-row-btn {
+      background: transparent;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #444;
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+      padding: 0.55rem 0.65rem;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .remove-row-btn:hover { border-color: #c0392b; color: #c0392b; }
+
+    .target-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .result-box {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      min-height: 2.6rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .result-text {
+      font-size: 0.9rem;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    }
+
+    .result-text.positive { color: #4caf7d; }
+    .result-text.negative { color: #c0392b; }
+    .result-text.neutral { color: #888; }
+
+    .add-scenario-btn {
+      width: 100%;
+      padding: 0.7rem;
+      background: transparent;
+      border: 1px dashed #2a2a2e;
+      border-radius: 8px;
+      color: #555;
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .add-scenario-btn:hover { border-color: #555; color: #ccc; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Preach Calculator</h1>
+    <p class="tagline">find how long to wait after preaching before entering the room</p>
+    <a class="back" href="/misc/">← back</a>
+
+    <div class="section">
+      <div class="section-label">Lightbearer</div>
+      <div class="toggle-row">
+        <button type="button" class="toggle-btn active" id="lbNo">No</button>
+        <button type="button" class="toggle-btn" id="lbYes">Yes</button>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div id="scenarios"></div>
+
+    <button type="button" class="add-scenario-btn" id="addScenario">+ Add scenario</button>
+  </div>
+
+  <script>
+    let lightbearer = false;
+    let scenarioSeq = 0;
+    let eventSeq = 0;
+
+    function regenRate() {
+      return lightbearer ? 0.4 : 0.2;
+    }
+
+    // Spec right at room entry, D ticks after preaching (preach drains 100 -> 75).
+    function specAtEntry(D, rate) {
+      return Math.min(100, 75 + rate * D);
+    }
+
+    // Simulate spec at the target room-tick, given entry delay D.
+    function simulate(D, drains, targetTick, rate) {
+      let spec = specAtEntry(D, rate);
+      let prevTick = 0;
+      const events = drains
+        .filter(e => e.tick <= targetTick)
+        .sort((a, b) => a.tick - b.tick);
+      for (const ev of events) {
+        spec = Math.min(100, spec + rate * (ev.tick - prevTick));
+        spec = Math.max(0, spec - ev.pct);
+        prevTick = ev.tick;
+      }
+      spec = Math.min(100, spec + rate * (targetTick - prevTick));
+      return spec;
+    }
+
+    // Find the minimum entry delay D that reaches targetPct, or report the achievable ceiling.
+    function solve(drains, targetTick, targetPct, rate) {
+      const capBound = Math.ceil(25 / rate) + 1; // ticks to fully cap spec at 100 pre-entry
+      const ceiling = simulate(capBound, drains, targetTick, rate);
+      if (ceiling < targetPct - 1e-9) {
+        return { achievable: false, ceiling };
+      }
+      for (let D = 0; D <= capBound; D++) {
+        if (simulate(D, drains, targetTick, rate) >= targetPct - 1e-9) {
+          return { achievable: true, minD: D };
+        }
+      }
+      return { achievable: false, ceiling };
+    }
+
+    function fmtPct(n) {
+      return (Math.round(n * 10) / 10).toString() + '%';
+    }
+
+    function makeEventRow(tick, pct) {
+      const id = 'ev' + (eventSeq++);
+      const row = document.createElement('div');
+      row.className = 'event-row';
+      row.dataset.eventId = id;
+      row.innerHTML = `
+        <div class="labeled-input">
+          <span class="input-label">Room tick</span>
+          <input type="number" class="drain-tick" min="0" placeholder="e.g. 94" value="${tick != null ? tick : ''}" />
+        </div>
+        <div class="labeled-input">
+          <span class="input-label">Drain %</span>
+          <input type="number" class="drain-pct" min="0" max="100" placeholder="e.g. 50" value="${pct != null ? pct : ''}" />
+        </div>
+        <button type="button" class="remove-row-btn" title="Remove event">✕</button>
+      `;
+      row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', renderAll));
+      row.querySelector('.remove-row-btn').addEventListener('click', () => {
+        const list = row.parentElement;
+        row.remove();
+        if (list.children.length === 0) {
+          list.appendChild(makeEventRow());
+        }
+        renderAll();
+      });
+      return row;
+    }
+
+    function makeScenario() {
+      const id = 'sc' + (scenarioSeq++);
+      const card = document.createElement('div');
+      card.className = 'scenario';
+      card.dataset.scenarioId = id;
+      card.innerHTML = `
+        <div class="scenario-header">
+          <span class="scenario-title">Scenario</span>
+          <button type="button" class="icon-btn remove-scenario" title="Remove scenario">✕</button>
+        </div>
+        <div class="sub-label">Drain events (room ticks after entry)</div>
+        <div class="event-list"></div>
+        <button type="button" class="icon-btn add add-event">+ Add drain event</button>
+        <div class="sub-label" style="margin-top:1rem;">Target</div>
+        <div class="target-row">
+          <div class="labeled-input">
+            <span class="input-label">Room tick</span>
+            <input type="number" class="target-tick" min="0" placeholder="e.g. 95" />
+          </div>
+          <div class="labeled-input">
+            <span class="input-label">Target %</span>
+            <input type="number" class="target-pct" min="0" max="100" placeholder="e.g. 55" />
+          </div>
+        </div>
+        <div class="result-box"><span class="result-text neutral">fill in the fields above</span></div>
+      `;
+
+      const eventList = card.querySelector('.event-list');
+      eventList.appendChild(makeEventRow());
+
+      card.querySelector('.add-event').addEventListener('click', () => {
+        eventList.appendChild(makeEventRow());
+        renderAll();
+      });
+
+      card.querySelectorAll('.target-tick, .target-pct').forEach(inp =>
+        inp.addEventListener('input', renderAll)
+      );
+
+      card.querySelector('.remove-scenario').addEventListener('click', () => {
+        const container = document.getElementById('scenarios');
+        card.remove();
+        if (container.children.length === 0) {
+          container.appendChild(makeScenario());
+        }
+        renderAll();
+      });
+
+      return card;
+    }
+
+    function renderScenario(card) {
+      const rate = regenRate();
+      const box = card.querySelector('.result-box');
+
+      const drains = [];
+      let hasError = false;
+      card.querySelectorAll('.event-row').forEach(row => {
+        const tickVal = row.querySelector('.drain-tick').value.trim();
+        const pctVal = row.querySelector('.drain-pct').value.trim();
+        if (tickVal === '' && pctVal === '') return;
+        const tick = parseInt(tickVal, 10);
+        const pct = parseFloat(pctVal);
+        if (isNaN(tick) || tick < 0 || isNaN(pct) || pct < 0 || pct > 100) {
+          hasError = true;
+        } else {
+          drains.push({ tick, pct });
+        }
+      });
+
+      const targetTickVal = card.querySelector('.target-tick').value.trim();
+      const targetPctVal = card.querySelector('.target-pct').value.trim();
+
+      if (hasError) {
+        box.innerHTML = '<span class="result-text negative">Drain ticks must be ≥ 0 and drain % must be 0–100</span>';
+        return;
+      }
+
+      if (targetTickVal === '' || targetPctVal === '') {
+        box.innerHTML = '<span class="result-text neutral">fill in the target fields above</span>';
+        return;
+      }
+
+      const targetTick = parseInt(targetTickVal, 10);
+      const targetPct = parseFloat(targetPctVal);
+
+      if (isNaN(targetTick) || targetTick < 0 || isNaN(targetPct) || targetPct < 0 || targetPct > 100) {
+        box.innerHTML = '<span class="result-text negative">Target tick must be ≥ 0 and target % must be 0–100</span>';
+        return;
+      }
+
+      const result = solve(drains, targetTick, targetPct, rate);
+
+      if (result.achievable) {
+        box.innerHTML = `<span class="result-text positive">Enter from tick ${result.minD} after preaching onward</span>`;
+      } else {
+        box.innerHTML = `<span class="result-text negative">Not achievable — max spec at tick ${targetTick} is ${fmtPct(result.ceiling)} (need ${fmtPct(targetPct)})</span>`;
+      }
+    }
+
+    function renderAll() {
+      document.querySelectorAll('.scenario').forEach(renderScenario);
+    }
+
+    document.getElementById('lbNo').addEventListener('click', () => {
+      lightbearer = false;
+      document.getElementById('lbNo').classList.add('active');
+      document.getElementById('lbYes').classList.remove('active');
+      renderAll();
+    });
+
+    document.getElementById('lbYes').addEventListener('click', () => {
+      lightbearer = true;
+      document.getElementById('lbYes').classList.add('active');
+      document.getElementById('lbNo').classList.remove('active');
+      renderAll();
+    });
+
+    document.getElementById('addScenario').addEventListener('click', () => {
+      document.getElementById('scenarios').appendChild(makeScenario());
+      renderAll();
+    });
+
+    document.getElementById('scenarios').appendChild(makeScenario());
+  </script>
+</body>
+</html>
