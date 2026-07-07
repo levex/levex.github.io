@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scythe Max Hit — xarp.us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f11;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 3rem 1.5rem;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 0.75rem;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 2.5rem;
+      font-size: 0.85rem;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .back:hover { color: #aaa; }
+
+    .section {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 0.75rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .labeled-input {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+    }
+
+    .input-label {
+      font-size: 0.72rem;
+      color: #555;
+    }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #e8e8e8;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]::placeholder { color: #3a3a42; }
+
+    input[type="number"]:focus,
+    select:focus { border-color: #555; }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.85rem center;
+      cursor: pointer;
+    }
+
+    .input-hint {
+      font-size: 0.72rem;
+      color: #3a3a42;
+      margin-top: 0.4rem;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1a1a1e;
+      margin: 1.75rem 0;
+    }
+
+    .result-box {
+      padding: 1rem 1.1rem;
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      min-height: 3.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.55rem;
+    }
+
+    .result-empty {
+      font-size: 0.8rem;
+      color: #2a2a2e;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+    }
+
+    .result-key {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #444;
+      min-width: 5.5rem;
+    }
+
+    .result-val {
+      font-size: 1rem;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      color: #e8e8e8;
+    }
+
+    .result-hits {
+      font-size: 1rem;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      color: #888;
+    }
+
+    .result-total {
+      color: #4ec94e;
+    }
+
+    .result-divider {
+      border: none;
+      border-top: 1px solid #1f1f23;
+      margin: 0.2rem 0;
+    }
+
+    .error {
+      font-size: 0.82rem;
+      color: #e54e4e;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Scythe Max Hit</h1>
+    <p class="tagline">Scythe of Vitur max hit calculator</p>
+    <a class="back" href="/misc/">← back</a>
+
+    <div class="section">
+      <div class="section-label">Stats</div>
+      <div class="input-row">
+        <div class="labeled-input">
+          <span class="input-label">Strength level (after potions)</span>
+          <input type="number" id="strength" value="118" min="1" max="125" />
+        </div>
+        <div class="labeled-input">
+          <span class="input-label">Prayer</span>
+          <select id="prayer">
+            <option value="1.0">None (×1.00)</option>
+            <option value="1.05">Burst of Strength (×1.05)</option>
+            <option value="1.1">Superhuman Strength (×1.10)</option>
+            <option value="1.15">Ultimate Strength (×1.15)</option>
+            <option value="1.18">Chivalry (×1.18)</option>
+            <option value="1.23" selected>Piety (×1.23)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Equipment &amp; Style</div>
+      <div class="input-row">
+        <div class="labeled-input">
+          <span class="input-label">Equipment strength bonus</span>
+          <input type="number" id="strBonus" value="75" min="0" />
+        </div>
+        <div class="labeled-input">
+          <span class="input-label">Attack style</span>
+          <select id="style">
+            <option value="3" selected>Aggressive (+3)</option>
+            <option value="1">Controlled (+1)</option>
+            <option value="0">Accurate / Defensive (+0)</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-hint">75 = scythe alone; a full max melee setup adds more</div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Multiplier</div>
+      <select id="multiplier">
+        <option value="1" selected>None</option>
+        <option value="helm">Slayer helm, on task (×7/6)</option>
+        <option value="salve">Salve amulet vs undead (×7/6)</option>
+      </select>
+      <div class="input-hint">Salve and slayer helm don't stack — pick whichever applies</div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="result-box" id="result">
+      <span class="result-empty">enter stats above to calculate</span>
+    </div>
+  </div>
+
+  <script>
+    function maxHit(strength, prayerMult, strBonus, styleBonus, sevenSixths) {
+      const effective = Math.floor(strength * prayerMult) + styleBonus + 8;
+      let base = Math.floor(0.5 + effective * (strBonus + 64) / 640);
+      if (sevenSixths) {
+        base = Math.floor(base * 7 / 6);
+      }
+      return base;
+    }
+
+    function calculate() {
+      const strengthVal = document.getElementById('strength').value.trim();
+      const strBonusVal = document.getElementById('strBonus').value.trim();
+      const box = document.getElementById('result');
+
+      if (strengthVal === '' || strBonusVal === '') {
+        box.innerHTML = '<span class="result-empty">enter stats above to calculate</span>';
+        return;
+      }
+
+      const strength = parseInt(strengthVal, 10);
+      const strBonus = parseInt(strBonusVal, 10);
+
+      if (isNaN(strength) || strength < 1 || isNaN(strBonus) || strBonus < 0) {
+        box.innerHTML = '<span class="error">Strength must be positive and equipment bonus non-negative</span>';
+        return;
+      }
+
+      const prayer = parseFloat(document.getElementById('prayer').value);
+      const style = parseInt(document.getElementById('style').value, 10);
+      const sevenSixths = document.getElementById('multiplier').value !== '1';
+
+      const h1 = maxHit(strength, prayer, strBonus, style, sevenSixths);
+      const h2 = Math.floor(h1 / 2);
+      const h3 = Math.floor(h1 / 4);
+
+      box.innerHTML =
+        `<div class="result-row"><span class="result-key">Base max</span><span class="result-val">${h1}</span></div>` +
+        `<hr class="result-divider" />` +
+        `<div class="result-row"><span class="result-key">vs 1×1</span><span class="result-hits">${h1}</span><span class="result-val result-total">${h1}</span></div>` +
+        `<div class="result-row"><span class="result-key">vs 2×2</span><span class="result-hits">${h1}+${h2}</span><span class="result-val result-total">${h1 + h2}</span></div>` +
+        `<div class="result-row"><span class="result-key">vs 3×3+</span><span class="result-hits">${h1}+${h2}+${h3}</span><span class="result-val result-total">${h1 + h2 + h3}</span></div>`;
+    }
+
+    ['strength', 'strBonus'].forEach(id => {
+      document.getElementById(id).addEventListener('input', calculate);
+    });
+    ['prayer', 'style', 'multiplier'].forEach(id => {
+      document.getElementById(id).addEventListener('change', calculate);
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
