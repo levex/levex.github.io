@@ -204,6 +204,7 @@
             <option value="1.15">Ultimate Strength (×1.15)</option>
             <option value="1.18">Chivalry (×1.18)</option>
             <option value="1.23" selected>Piety (×1.23)</option>
+            <option value="1.28">Zeal (×1.28)</option>
           </select>
         </div>
       </div>
@@ -233,9 +234,9 @@
       <select id="multiplier">
         <option value="1" selected>None</option>
         <option value="helm">Slayer helm, on task (×7/6)</option>
-        <option value="salve">Salve amulet vs undead (×7/6)</option>
+        <option value="salve">Salve amulet (e) vs undead (×6/5)</option>
       </select>
-      <div class="input-hint">Salve and slayer helm don't stack — pick whichever applies</div>
+      <div class="input-hint">Salve (e) and slayer helm don't stack — pick whichever applies</div>
     </div>
 
     <hr class="divider" />
@@ -246,10 +247,12 @@
   </div>
 
   <script>
-    function maxHit(strength, prayerMult, strBonus, styleBonus, sevenSixths) {
+    function maxHit(strength, prayerMult, strBonus, styleBonus, multiplier) {
       const effective = Math.floor(strength * prayerMult) + styleBonus + 8;
       let base = Math.floor(0.5 + effective * (strBonus + 64) / 640);
-      if (sevenSixths) {
+      if (multiplier === 'salve') {
+        base = Math.floor(base * 6 / 5);
+      } else if (multiplier === 'helm') {
         base = Math.floor(base * 7 / 6);
       }
       return base;
@@ -275,9 +278,9 @@
 
       const prayer = parseFloat(document.getElementById('prayer').value);
       const style = parseInt(document.getElementById('style').value, 10);
-      const sevenSixths = document.getElementById('multiplier').value !== '1';
+      const multiplier = document.getElementById('multiplier').value;
 
-      const h1 = maxHit(strength, prayer, strBonus, style, sevenSixths);
+      const h1 = maxHit(strength, prayer, strBonus, style, multiplier);
       const h2 = Math.floor(h1 / 2);
       const h3 = Math.floor(h1 / 4);
 

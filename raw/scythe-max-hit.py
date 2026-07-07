@@ -13,8 +13,10 @@ def max_hit(strength_level: int, prayer_multiplier: float,
             slayer: bool = False, salve: bool = False) -> int:
     effective = math.floor(strength_level * prayer_multiplier) + style_bonus + 8
     base = math.floor(0.5 + effective * (equipment_str_bonus + 64) / 640)
-    # Salve and slayer helm don't stack; both are 7/6 for melee, salve wins ties
-    if salve or slayer:
+    # Salve (e) and slayer helm don't stack; salve (e) is 6/5, slayer helm 7/6
+    if salve:
+        base = math.floor(base * 6 / 5)
+    elif slayer:
         base = math.floor(base * 7 / 6)
     return base
 
@@ -36,7 +38,7 @@ def main():
     parser.add_argument("--slayer", action="store_true",
                         help="wearing a slayer helm with an active task (7/6 max hit multiplier)")
     parser.add_argument("--salve", action="store_true",
-                        help="wearing a salve amulet vs undead (7/6 max hit multiplier, "
+                        help="wearing a salve amulet (e) vs undead (6/5 max hit multiplier, "
                              "does not stack with --slayer)")
     args = parser.parse_args()
 
