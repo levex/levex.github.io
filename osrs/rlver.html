@@ -5,100 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RuneLite Version History</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            background: #0f0f11;
+            color: #e8e8e8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.5;
+            padding: 2rem 1.5rem 4rem;
         }
 
-        .container {
-            max-width: 1000px;
+        .wrap {
+            max-width: 680px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+        .back {
+            display: inline-block;
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+            color: #5c5c66;
+            text-decoration: none;
+            transition: color 0.15s;
         }
+        .back:hover { color: #aaa; }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 300;
-        }
+        header { margin-bottom: 1.75rem; }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .tabs {
-            display: flex;
-            background: #f0f0f0;
-            border-bottom: 2px solid #ddd;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            background: transparent;
-            font-size: 1rem;
+        h1 {
+            font-size: 1.8rem;
             font-weight: 600;
+            letter-spacing: -0.03em;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            color: #82828c;
+        }
+
+        .seg {
+            display: flex;
+            border: 1px solid #2a2a2e;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .seg button {
+            flex: 1;
+            background: transparent;
+            color: #9a9aa4;
+            border: none;
+            border-right: 1px solid #2a2a2e;
+            padding: 0.7rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            color: #666;
-            transition: all 0.2s ease;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .seg button:last-child { border-right: none; }
+        .seg button:hover { color: #ccc; background: #1a1a1e; }
+        .seg button.on { background: #4ec94e; color: #08140a; }
+        .seg button.on:hover { color: #08140a; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .panel {
+            background: #16161a;
+            border: 1px solid #2a2a2e;
+            border-radius: 10px;
+            padding: 1.25rem;
         }
 
-        .tab-btn:hover {
-            background: #e8e8e8;
-            color: #333;
+        .refresh-btn {
+            background: #202028;
+            color: #dadada;
+            border: 1px solid #36363f;
+            border-radius: 6px;
+            padding: 0.5rem 0.9rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+            margin-bottom: 1rem;
         }
-
-        .tab-btn.active {
-            color: #3498db;
-            border-bottom-color: #3498db;
-            background: white;
-        }
-
-        .tab-content {
-            display: none;
-            padding: 30px;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .refresh-btn:hover { border-color: #5a5a66; background: #2a2a33; color: #fff; }
 
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #666;
+            padding: 2.5rem 1rem;
+            color: #82828c;
+            font-size: 0.85rem;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border: 3px solid #2a2a2e;
+            border-top: 3px solid #4ec94e;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 1rem;
         }
 
         @keyframes spin {
@@ -107,90 +120,86 @@
         }
 
         .error {
-            background: #ff6b6b;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
+            background: rgba(229, 78, 78, 0.12);
+            border: 1px solid #e54e4e;
+            color: #ff8a8a;
+            padding: 0.9rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
         }
 
-        .versions-table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 0.85rem;
         }
 
-        .versions-table th {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            padding: 15px;
+        th {
             text-align: left;
+            padding: 0.5rem 0.5rem;
+            border-bottom: 1px solid #2a2a2e;
+            color: #8a8a94;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .versions-table td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            font-size: 1rem;
+        td {
+            padding: 0.6rem 0.5rem;
+            border-bottom: 1px solid #1f1f23;
         }
 
-        .versions-table tr:hover {
-            background-color: #f8f9fa;
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: #1a1a1e; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.55rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            white-space: nowrap;
         }
 
-        .versions-table tr:last-child td {
-            border-bottom: none;
+        @media (max-width: 480px) {
+            .badge { white-space: normal; }
         }
 
         .tag {
-            background: #e74c3c;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            background: rgba(229, 78, 78, 0.14);
+            color: #e87a7a;
+            border-color: rgba(229, 78, 78, 0.35);
         }
 
         .version {
-            background: #27ae60;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            background: rgba(78, 201, 78, 0.14);
+            color: #6fd66f;
+            border-color: rgba(78, 201, 78, 0.35);
         }
 
         .maven-version {
-            background: #8e44ad;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            background: rgba(78, 201, 78, 0.14);
+            color: #6fd66f;
+            border-color: rgba(78, 201, 78, 0.35);
         }
 
         .maven-snapshot {
-            background: #e67e22;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            background: rgba(232, 184, 78, 0.14);
+            color: #e8b84e;
+            border-color: rgba(232, 184, 78, 0.35);
         }
 
         .commit-hash {
-            font-family: 'Courier New', monospace;
-            background: #34495e;
-            color: white;
-            padding: 5px 10px;
+            font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+            background: #0f0f11;
+            border: 1px solid #2a2a2e;
+            color: #c8c8d0;
+            padding: 0.2rem 0.55rem;
             border-radius: 5px;
-            font-size: 0.9rem;
+            font-size: 0.78rem;
             display: inline-block;
             max-width: 140px;
             overflow: hidden;
@@ -200,14 +209,10 @@
         }
 
         .tag-link {
-            color: white;
             text-decoration: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.15s;
         }
-
-        .tag-link:hover {
-            opacity: 0.8;
-        }
+        .tag-link:hover { opacity: 0.8; }
 
         .version-container {
             display: flex;
@@ -216,156 +221,122 @@
         }
 
         .copy-btn {
-            background: #3498db;
-            color: white;
-            border: none;
+            background: #202028;
+            color: #dadada;
+            border: 1px solid #36363f;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            transition: all 0.3s ease;
+            font-size: 11px;
+            flex-shrink: 0;
+            transition: border-color 0.15s, background 0.15s;
         }
-
-        .copy-btn:hover {
-            background: #2980b9;
-            transform: scale(1.1);
-        }
-
-        .copy-btn:active {
-            transform: scale(0.95);
-        }
+        .copy-btn:hover { border-color: #5a5a66; background: #2a2a33; }
+        .copy-btn:active { transform: scale(0.95); }
 
         .copy-success {
-            background: #27ae60 !important;
-        }
-
-        .refresh-btn {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-        }
-
-        .refresh-btn:active {
-            transform: translateY(0);
+            border-color: #4ec94e !important;
+            color: #4ec94e !important;
         }
 
         .last-updated {
             text-align: center;
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 20px;
+            color: #5c5c66;
+            font-size: 0.75rem;
+            margin-top: 1rem;
         }
-
-        .back {
-            display: inline-block;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.5);
-            text-decoration: none;
-        }
-        .back:hover { color: rgba(255,255,255,0.85); }
 
         .date-cell {
-            color: #555;
-            font-size: 0.9rem;
+            color: #8a8a94;
+            font-size: 0.8rem;
             white-space: nowrap;
-            min-width: 140px;
         }
-
     </style>
 </head>
 <body>
-    <a class="back" href="/misc/">← back</a>
-    <div class="container">
-        <div class="header">
+    <div class="wrap">
+        <a class="back" href="/misc/">← back</a>
+        <header>
             <h1>RuneLite Version History</h1>
-            <p>Version info from GitHub and the RuneLite Maven repository</p>
-        </div>
+            <p class="tagline">Version info from GitHub and the RuneLite Maven repository</p>
+        </header>
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('github')">GitHub Tags</button>
-            <button class="tab-btn" onclick="switchTab('maven')">Maven Releases</button>
+        <div class="seg">
+            <button class="on" onclick="switchTab('github')">GitHub Tags</button>
+            <button onclick="switchTab('maven')">Maven Releases</button>
         </div>
 
         <!-- GitHub tab -->
         <div id="tab-github" class="tab-content active">
-            <button class="refresh-btn" onclick="fetchGitHubVersions()">🔄 Refresh</button>
+            <div class="panel">
+                <button class="refresh-btn" onclick="fetchGitHubVersions()">↻ Refresh</button>
 
-            <div id="gh-loading" class="loading">
-                <div class="spinner"></div>
-                <p>Fetching RuneLite versions...</p>
+                <div id="gh-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Fetching RuneLite versions...</p>
+                </div>
+
+                <div id="gh-error" class="error" style="display: none;"></div>
+
+                <table id="gh-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>RuneLite Version</th>
+                            <th>Published</th>
+                            <th>Commit Hash</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gh-body"></tbody>
+                </table>
+
+                <div id="gh-last-updated" class="last-updated"></div>
             </div>
-
-            <div id="gh-error" class="error" style="display: none;"></div>
-
-            <table id="gh-table" class="versions-table" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>Tag</th>
-                        <th>RuneLite Version</th>
-                        <th>Published</th>
-                        <th>Commit Hash</th>
-                    </tr>
-                </thead>
-                <tbody id="gh-body"></tbody>
-            </table>
-
-            <div id="gh-last-updated" class="last-updated"></div>
         </div>
 
         <!-- Maven tab -->
         <div id="tab-maven" class="tab-content">
-            <button class="refresh-btn" onclick="fetchMavenVersions()">🔄 Refresh</button>
+            <div class="panel">
+                <button class="refresh-btn" onclick="fetchMavenVersions()">↻ Refresh</button>
 
-            <div id="mv-loading" class="loading">
-                <div class="spinner"></div>
-                <p>Fetching Maven metadata...</p>
+                <div id="mv-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Fetching Maven metadata...</p>
+                </div>
+
+                <div id="mv-error" class="error" style="display: none;"></div>
+
+                <table id="mv-meta-table" style="display: none; margin-bottom: 1.5rem;">
+                    <thead>
+                        <tr>
+                            <th>Latest</th>
+                            <th>Release</th>
+                            <th>Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mv-meta-body"></tbody>
+                </table>
+
+                <table id="mv-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Recent Versions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mv-body"></tbody>
+                </table>
             </div>
-
-            <div id="mv-error" class="error" style="display: none;"></div>
-
-            <table id="mv-meta-table" class="versions-table" style="display: none; margin-bottom: 24px;">
-                <thead>
-                    <tr>
-                        <th>Latest</th>
-                        <th>Release</th>
-                        <th>Last Updated</th>
-                    </tr>
-                </thead>
-                <tbody id="mv-meta-body"></tbody>
-            </table>
-
-            <table id="mv-table" class="versions-table" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>Recent Versions</th>
-                    </tr>
-                </thead>
-                <tbody id="mv-body"></tbody>
-            </table>
         </div>
     </div>
 
     <script>
         function switchTab(name) {
-            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-                btn.classList.toggle('active', ['github', 'maven'][i] === name);
+            document.querySelectorAll('.seg button').forEach((btn, i) => {
+                btn.classList.toggle('on', ['github', 'maven'][i] === name);
             });
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.toggle('active', el.id === 'tab-' + name);
@@ -433,18 +404,18 @@
                     : '—';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><a href="https://github.com/runelite/runelite/releases/tag/${v.tag}" target="_blank" class="tag-link"><span class="tag">${v.tag}</span></a></td>
+                    <td><a href="https://github.com/runelite/runelite/releases/tag/${v.tag}" target="_blank" class="tag-link"><span class="badge tag">${v.tag}</span></a></td>
                     <td>
                         <div class="version-container">
-                            <span class="version">${v.version}</span>
-                            <button class="copy-btn" onclick="copyToClipboard('${v.version}', this)" title="Copy version">📋</button>
+                            <span class="badge version">${v.version}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('${v.version}', this)" title="Copy version">⧉</button>
                         </div>
                     </td>
                     <td class="date-cell">${dateStr}</td>
                     <td>
                         <div class="version-container">
                             <span class="commit-hash" title="${v.commitHash}">${v.commitHash}</span>
-                            <button class="copy-btn" onclick="copyToClipboard('${v.commitHash}', this)" title="Copy commit hash">📋</button>
+                            <button class="copy-btn" onclick="copyToClipboard('${v.commitHash}', this)" title="Copy commit hash">⧉</button>
                         </div>
                     </td>
                 `;
@@ -507,8 +478,8 @@
             const table = document.getElementById('mv-meta-table');
             tbody.innerHTML = `
                 <tr>
-                    <td><span class="maven-snapshot">${latest}</span></td>
-                    <td><span class="maven-version">${release}</span></td>
+                    <td><span class="badge maven-snapshot">${latest}</span></td>
+                    <td><span class="badge maven-version">${release}</span></td>
                     <td class="date-cell">${lastUpdated}</td>
                 </tr>
             `;
@@ -524,7 +495,7 @@
                 const isSnapshot = v.endsWith('-SNAPSHOT');
                 const badgeClass = isSnapshot ? 'maven-snapshot' : 'maven-version';
                 const row = document.createElement('tr');
-                row.innerHTML = `<td><span class="${badgeClass}">${v}</span></td>`;
+                row.innerHTML = `<td><span class="badge ${badgeClass}">${v}</span></td>`;
                 tbody.appendChild(row);
             });
 
@@ -549,7 +520,7 @@
                 btn.textContent = '✓';
                 setTimeout(() => {
                     btn.classList.remove('copy-success');
-                    btn.textContent = '📋';
+                    btn.textContent = '⧉';
                 }, 1500);
             }
         }

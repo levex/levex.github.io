@@ -5,314 +5,353 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verzik P1 Simulator</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f0f11;
+            --panel: #16161a;
+            --ink: #e8e8e8;
+            --line: #2a2a2e;
+            --label: #54545e;
+            --accent: #4ec94e;
+            --yellow: #e8b84e;
+            --red: #e54e4e;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.5;
+            padding: 2rem 1.5rem 4rem;
         }
 
-        .container {
-            max-width: 1200px;
+        .wrap {
+            max-width: 680px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+        .back {
+            display: inline-block;
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+            color: #5c5c66;
+            text-decoration: none;
+            transition: color 0.15s;
         }
+        .back:hover { color: #aaa; }
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
+        header { margin-bottom: 1.75rem; }
 
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .input-section {
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
+        h1 {
+            font-size: 1.8rem;
             font-weight: 600;
-            color: #333;
+            letter-spacing: -0.03em;
+            color: #fff;
+            margin-bottom: 0.3rem;
         }
 
-        .input-group input, .input-group textarea {
+        .tagline {
+            font-size: 0.85rem;
+            color: #82828c;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-label {
+            font-size: 0.67rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--label);
+            margin-bottom: 0.9rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field + .field { margin-top: 1rem; }
+
+        .field label {
+            font-size: 0.75rem;
+            color: #9a9aa4;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        input[type="number"], textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        .input-group input:focus, .input-group textarea:focus {
+            padding: 0.6rem 0.85rem;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            font-size: 0.9rem;
+            font-family: inherit;
             outline: none;
-            border-color: #667eea;
+            transition: border-color 0.15s;
         }
 
-        .input-group textarea {
-            height: 120px;
+        textarea {
+            height: 110px;
             resize: vertical;
-            font-family: 'Courier New', monospace;
+            font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+            font-size: 0.78rem;
         }
+
+        input[type="number"]:focus, textarea:focus { border-color: #4a4a54; }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        ::placeholder { color: #52525c; }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: #c8c8d0;
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .advanced-options {
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .hint-icon {
+            text-decoration: none;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            transition: opacity 0.15s;
+        }
+        .hint-icon:hover { opacity: 1; }
 
         .button-group {
             display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
             flex: 1;
-            min-width: 150px;
+            min-width: 140px;
+            padding: 0.7rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.1s;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--accent);
+            color: #08140a;
         }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
+        .btn-primary:hover { background: #5ed65e; transform: translateY(-1px); }
 
         .btn-secondary {
-            background: #f8f9fa;
-            color: #333;
-            border: 2px solid #e1e5e9;
+            background: #202028;
+            color: #dadada;
+            border-color: #36363f;
         }
-
-        .btn-secondary:hover {
-            background: #e9ecef;
-        }
-
-        .results-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-
-        .results-section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #e1e5e9;
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-        }
-
-        .result-label {
-            font-weight: 600;
-            color: #555;
-        }
-
-        .result-value {
-            font-weight: 700;
-            color: #667eea;
-        }
+        .btn-secondary:hover { border-color: #5a5a66; background: #2a2a33; color: #fff; }
 
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #666;
+            padding: 2rem 1rem;
+            color: #82828c;
+            font-size: 0.85rem;
+        }
+
+        .spinner {
+            border: 3px solid var(--line);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
+            background: rgba(229, 78, 78, 0.12);
+            border: 1px solid var(--red);
+            color: #ff8a8a;
+            padding: 0.9rem 1rem;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #c33;
-        }
-
-        .success {
-            background: #efe;
-            color: #363;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #363;
+            font-size: 0.85rem;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
         }
 
         .stat-card {
-            background: white;
-            padding: 15px;
+            background: var(--bg);
+            border: 1px solid var(--line);
             border-radius: 8px;
-            border: 1px solid #e1e5e9;
+            padding: 0.85rem 1rem;
         }
 
         .stat-card h4 {
-            color: #333;
-            margin-bottom: 8px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #8a8a94;
+            margin-bottom: 0.4rem;
         }
 
         .stat-value {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ink);
+            font-variant-numeric: tabular-nums;
         }
 
-        .advanced-options {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 15px;
-            border: 1px solid #e1e5e9;
-        }
-
-        .input-group label input[type="checkbox"] {
-            width: auto;
-            margin-right: 8px;
-            transform: scale(1.1);
-        }
-
-        .input-group label {
+        .dist-header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            margin: 1.25rem 0 0.75rem;
+        }
+
+        .dist-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--label);
+        }
+
+        .copy-btn {
+            background: #202028;
+            color: #dadada;
+            border: 1px solid #36363f;
+            border-radius: 6px;
+            padding: 0.3rem 0.6rem;
             cursor: pointer;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .hint-icon {
-            margin-left: 8px;
-            text-decoration: none;
-            color: #667eea;
-            font-size: 16px;
-            transition: color 0.3s ease;
-            display: inline-flex;
+            font-size: 0.72rem;
+            font-family: inherit;
+            display: flex;
             align-items: center;
+            gap: 0.35rem;
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
+        }
+        .copy-btn:hover { border-color: #5a5a66; background: #2a2a33; color: #fff; }
+        .copy-btn.copy-success { border-color: var(--accent); color: var(--accent); }
+
+        .output-section {
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+            font-size: 0.78rem;
+            color: #c8c8d0;
+            max-height: 320px;
+            overflow-y: auto;
         }
 
-        .hint-icon:hover {
-            color: #5a6fd8;
-            text-decoration: none;
-        }
-
-        .hint-icon span {
-            font-size: 14px;
-            opacity: 0.8;
-        }
+        .output-section div { padding: 0.15rem 0; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="wrap">
+        <a class="back" href="/osrs/">← back</a>
+        <header>
             <h1>Verzik P1 Simulator</h1>
-            <p>Enter your full_code and run simulations</p>
+            <p class="tagline">Enter your full_code and run simulations</p>
+        </header>
+
+        <div class="panel">
+            <div class="section-label">Configuration</div>
+
+            <div class="field">
+                <label for="fullCode">Code</label>
+                <textarea id="fullCode" placeholder="Enter your full_code here...">5,0~12~12~0~0,D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~H~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x C~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x H~x~x~S~x~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~C~x~x~x~S~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x B~x~S~x~x~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~!~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~ST~S~x~x~!~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x</textarea>
+            </div>
+
+            <div class="field">
+                <label for="thrallCount">Number of Thralls</label>
+                <input type="number" id="thrallCount" value="4" min="0" max="10">
+            </div>
+
+            <div class="field">
+                <label for="simCount">Number of Simulations</label>
+                <input type="number" id="simCount" value="15000" min="1000" max="100000">
+            </div>
+
+            <div class="field">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="showAdvanced" onchange="toggleAdvancedOptions()">
+                    Show Advanced Options
+                </label>
+            </div>
+
+            <div id="advancedOptions" class="advanced-options" style="display: none;">
+                <div class="field">
+                    <label for="dawnMax">
+                        Dawn Auto Max Hit
+                        <a href="https://oldschool.runescape.wiki/w/Dawnbringer#Maximum_hit" target="_blank" class="hint-icon" title="View Dawnbringer max hit formula on OSRS Wiki">ℹ</a>
+                    </label>
+                    <input type="number" id="dawnMax" value="21" min="1" max="50">
+                </div>
+                <div class="field">
+                    <label for="timerTimeout">Verzik Timeout</label>
+                    <input type="number" id="timerTimeout" value="116" min="50" max="200">
+                </div>
+            </div>
         </div>
 
-        <div class="content">
-            <div class="input-section">
-                <div class="input-group">
-                    <label for="fullCode">Code:</label>
-                    <textarea id="fullCode" placeholder="Enter your full_code here...">5,0~12~12~0~0,D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~H~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x C~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x H~x~x~S~x~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~C~x~x~x~S~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x B~x~S~x~x~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~!~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~ST~S~x~x~!~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x
-            </textarea>
-                </div>
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="runSimulation()">Run Simulation</button>
+            <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+            <button class="btn btn-secondary" onclick="loadExample()">Load Example</button>
+            <button class="btn btn-secondary" onclick="testBasicFunctionality()">Test Basic</button>
+        </div>
 
-                <div class="input-group">
-                    <label for="thrallCount">Number of Thralls:</label>
-                    <input type="number" id="thrallCount" value="4" min="0" max="10">
-                </div>
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Running simulation... Please wait...</p>
+        </div>
 
-                <div class="input-group">
-                    <label for="simCount">Number of Simulations:</label>
-                    <input type="number" id="simCount" value="15000" min="1000" max="100000">
-                </div>
-
-                <div class="input-group">
-                    <label>
-                        <input type="checkbox" id="showAdvanced" onchange="toggleAdvancedOptions()">
-                        Show Advanced Options
-                    </label>
-                </div>
-
-                <div id="advancedOptions" class="advanced-options" style="display: none;">
-                    <div class="input-group">
-                        <label for="dawnMax">
-                            Dawn Auto Max Hit:
-                            <a href="https://oldschool.runescape.wiki/w/Dawnbringer#Maximum_hit" target="_blank" class="hint-icon" title="View Dawnbringer max hit formula on OSRS Wiki">
-                                <span>ℹ️</span>
-                            </a>
-                        </label>
-                        <input type="number" id="dawnMax" value="21" min="1" max="50">
-                    </div>
-                    <div class="input-group">
-                        <label for="timerTimeout">Verzik Timeout:</label>
-                        <input type="number" id="timerTimeout" value="116" min="50" max="200">
-                    </div>
-                </div>
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="runSimulation()">Run Simulation</button>
-                <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
-                <button class="btn btn-secondary" onclick="loadExample()">Load Example</button>
-                <button class="btn btn-secondary" onclick="testBasicFunctionality()">Test Basic</button>
-            </div>
-
-            <div id="results" class="results-section" style="display: none;">
-                <h3>Simulation Results</h3>
-                <div id="resultsContent"></div>
-            </div>
-
-            <div id="loading" class="loading" style="display: none;">
-                Running simulation... Please wait...
-            </div>
+        <div id="results" class="panel" style="display: none;">
+            <div class="section-label">Simulation Results</div>
+            <div id="resultsContent"></div>
         </div>
     </div>
 
@@ -529,24 +568,24 @@
         function p1Sim(hp, fullCode, thrallCount, dawnMax = 21, timerTimeout = 116) {
             try {
                 console.log('Starting p1Sim with hp:', hp, 'fullCode:', fullCode, 'thrallCount:', thrallCount);
-                
+
                 const splitCode = fullCode.split(',');
                 console.log('Split code:', splitCode);
-                
+
                 const scale = parseInt(splitCode[0]);
                 const rings = splitCode[1].split('~');
                 const fullChart = splitCode[2];
-                
+
                 console.log('Scale:', scale, 'Rings:', rings, 'Full chart length:', fullChart.length);
 
                 const chartParts = fullChart.split(' ');
                 console.log('Chart parts:', chartParts.length, chartParts);
-                
+
                 // Validate that we have enough chart parts
                 if (chartParts.length < 5) {
                     throw new Error('Invalid full_code: Not enough chart parts. Found ' + chartParts.length + ', need 5');
                 }
-                
+
                 const teamHits = [
                     chartParts[0].split('~'),
                     chartParts[1].split('~'),
@@ -554,14 +593,14 @@
                     chartParts[3].split('~'),
                     chartParts[4].split('~')
                 ];
-                
+
                 console.log('Team hits lengths:', teamHits.map(hits => hits.length));
 
                 const teamHp = [START_HP, START_HP, START_HP, START_HP, START_HP];
                 const teamStats = [START_STATS, START_STATS, START_STATS, START_STATS, START_STATS];
                 const potCooldown = [0, 0, 0, 0, 0];
                 const verzikAutos = [21, 35, 49, 63, 77, 91, 105, 119, 133, 147];
-                
+
                 // Create rolls instance and update with correct rings
                 const rolls = new Rolls(dawnMax);
                 rolls.updateWeaponStats(teamStats);
@@ -573,17 +612,17 @@
 
                 while (hp > 0 && iterations < maxIterations) {
                     iterations++;
-                    
+
                     // Add bounds checking for teamHits array access
                     if (player >= teamHits.length || timer >= teamHits[player].length) {
                         console.log('Reached end of chart. Player:', player, 'Timer:', timer);
                         break;
                     }
-                    
+
                     const weapon = teamHits[player][timer];
                     const damage = attack(weapon, player, rolls, teamStats, teamHp);
                     hp -= damage;
-                    
+
                     rolls.pot(player, teamHp, teamStats, potCooldown);
                     potCooldown[player] = Math.max(potCooldown[player] - 1, 0);
 
@@ -613,7 +652,7 @@
                         }
                     }
                 }
-                
+
                 console.log('Simulation ended. Timer:', timer, 'HP:', hp, 'Iterations:', iterations);
                 return timer + 1;
             } catch (error) {
@@ -645,22 +684,22 @@
             setTimeout(() => {
                 try {
                     console.log('Starting simulation with:', { fullCode, thrallCount, simCount });
-                    
+
                     const splitCode = fullCode.split(',');
                     console.log('Split code length:', splitCode.length);
-                    
+
                     // Validate the full_code format
                     if (splitCode.length < 3) {
                         throw new Error('Invalid full_code format. Expected at least 3 parts separated by commas.');
                     }
-                    
+
                     const scale = parseInt(splitCode[0]);
                     console.log('Scale:', scale);
-                    
+
                     if (isNaN(scale) || scale < 0 || scale > 5) {
                         throw new Error('Invalid scale value. Must be a number between 0 and 5.');
                     }
-                    
+
                     let hp;
                     if (scale === 5) {
                         hp = 2000;
@@ -669,19 +708,19 @@
                     } else {
                         hp = 1500;
                     }
-                    
+
                     console.log('HP set to:', hp);
 
                     const killTimes = [];
                     let total = 0;
 
                     console.log('Starting', simCount, 'simulations...');
-                    
+
                     for (let x = 0; x < simCount; x++) {
                         if (x % 1000 === 0) {
                             console.log('Completed', x, 'simulations');
                         }
-                        
+
                         try {
                             const result = p1Sim(hp, fullCode, thrallCount, dawnMax, timerTimeout);
                             if (result > 0) {
@@ -692,7 +731,7 @@
                             // Continue with other simulations
                         }
                     }
-                    
+
                     console.log('Completed all simulations. Valid results:', killTimes.length);
 
                     if (killTimes.length === 0) {
@@ -703,7 +742,7 @@
                         total += ele;
                     }
                     const average = total / killTimes.length;
-                    
+
                     console.log('Average:', average, 'Total results:', killTimes.length);
 
                     // Count frequency of each kill time
@@ -711,7 +750,7 @@
                     for (let time of killTimes) {
                         frequency[time] = (frequency[time] || 0) + 1;
                     }
-                    
+
                     console.log('Frequency distribution:', frequency);
 
                     showResults(average, frequency, scale, thrallCount, killTimes.length, dawnMax);
@@ -724,7 +763,7 @@
 
         function showResults(average, frequency, scale, thrallCount, simCount, dawnMax) {
             hideLoading();
-            
+
             const resultsDiv = document.getElementById('results');
             const contentDiv = document.getElementById('resultsContent');
 
@@ -750,21 +789,44 @@
             `;
 
             // Add frequency distribution in Python format
-            html += '<h4 style="margin-top: 20px; color: #333;">Kill Time Distribution (Python Format):</h4>';
-            html += '<div style="background: white; border-radius: 8px; padding: 15px; margin-top: 10px; font-family: monospace; font-size: 14px;">';
-            
             const sortedTimes = Object.keys(frequency).sort((a, b) => parseInt(a) - parseInt(b));
+            let distText = '';
+            html += '<div class="dist-header"><span class="dist-label">Kill Time Distribution</span><button class="copy-btn" onclick="copyDistribution(this)" title="Copy distribution">⧉ Copy</button></div>';
+            html += '<div class="output-section">';
+
             for (let time of sortedTimes) {
                 const count = frequency[time];
-                html += `<div style="margin-bottom: 5px;">${time}=${count},</div>`;
+                html += `<div>${time}=${count},</div>`;
+                distText += `${time}=${count},\n`;
             }
             html += '</div>';
 
+            lastDistributionText = distText;
             contentDiv.innerHTML = html;
             resultsDiv.style.display = 'block';
         }
 
+        let lastDistributionText = '';
 
+        async function copyDistribution(btn) {
+            try {
+                await navigator.clipboard.writeText(lastDistributionText);
+            } catch (_) {
+                const ta = document.createElement('textarea');
+                ta.value = lastDistributionText;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            const original = btn.innerHTML;
+            btn.classList.add('copy-success');
+            btn.innerHTML = '✓ Copied';
+            setTimeout(() => {
+                btn.classList.remove('copy-success');
+                btn.innerHTML = original;
+            }, 1500);
+        }
 
         function showLoading() {
             document.getElementById('loading').style.display = 'block';
@@ -797,7 +859,7 @@
         function toggleAdvancedOptions() {
             const checkbox = document.getElementById('showAdvanced');
             const advancedOptions = document.getElementById('advancedOptions');
-            
+
             if (checkbox.checked) {
                 advancedOptions.style.display = 'block';
             } else {
@@ -807,30 +869,30 @@
 
         function testBasicFunctionality() {
             console.log('Testing basic functionality...');
-            
+
             // Test 1: Check if Rolls class works
             try {
                 const rolls = new Rolls();
                 console.log('Rolls class created successfully');
-                
+
                 // Test 2: Check if basic functions work
                 const testDamage = bp();
                 console.log('BP damage test:', testDamage);
-                
+
                 const testSang = sang();
                 console.log('Sang damage test:', testSang);
-                
+
                 const testDawn = dawnSpec();
                 console.log('Dawn spec test:', testDawn);
-                
+
                 // Test 3: Check if simple simulation works
                 const simpleCode = '5,0~12~12~0~0,D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~H~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x C~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x H~x~x~S~x~x~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~C~x~x~x~S~x~x~x~x~D~x~x~x~D~!~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x B~x~S~x~x~x~x~S~x~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~x~x~x~D~!~x~x~D~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~ST~S~x~x~!~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~S~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x~x';
-                
+
                 const result = p1Sim(2000, simpleCode, 4, 21, 116);
                 console.log('Simple simulation result:', result);
-                
+
                 showResults(result, {[result]: 1}, 5, 4, 1, 21);
-                
+
             } catch (error) {
                 console.error('Test failed:', error);
                 showError('Test failed: ' + error.message);
@@ -838,4 +900,4 @@
         }
     </script>
 </body>
-</html> 
+</html>

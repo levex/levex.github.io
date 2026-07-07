@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cycle Loss Calculator — xarp.us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0f0f11;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .page { max-width: 680px; margin: 0 auto; }
+
+    a.back {
+      display: inline-block;
+      margin-bottom: 2rem;
+      font-size: 0.85rem;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    a.back:hover { color: #aaa; }
+
+    header { margin-bottom: 2rem; }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle { font-size: 0.85rem; color: #555; }
+
+    .section {
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 1rem;
+    }
+
+    .row { display: flex; gap: 0.75rem; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .field label { font-size: 0.75rem; color: #666; }
+
+    .field input {
+      background: #0f0f11;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #e8e8e8;
+      font-size: 0.9rem;
+      padding: 0.45rem 0.7rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .field input:focus { border-color: #4a4a54; }
+
+    /* Players */
+    .player-row {
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-end;
+      margin-bottom: 0.6rem;
+    }
+
+    .field-name   { flex: 1.2; }
+    .field-hit    { flex: 1; }
+    .field-narrow { flex: 0.65; }
+
+    .divider {
+      width: 1px;
+      height: 30px;
+      background: #2a2a2e;
+      flex-shrink: 0;
+      margin-bottom: 1px;
+    }
+
+    .btn-remove {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      background: none;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      color: #444;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-remove:hover { color: #e55; border-color: #522; }
+
+    .player-hint {
+      font-size: 0.72rem;
+      color: #3a3a42;
+      margin-bottom: 0.75rem;
+    }
+
+    .btn-add {
+      width: 100%;
+      padding: 0.5rem;
+      background: none;
+      border: 1px dashed #2a2a2e;
+      border-radius: 6px;
+      color: #444;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-add:hover { color: #999; border-color: #555; }
+
+    /* Result */
+    .result-card {
+      background: #16161a;
+      border: 1px solid #2a2a2e;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .result-head {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+      margin-bottom: 0.75rem;
+    }
+
+    .result-delta {
+      font-size: 3.5rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+      color: #555;
+      transition: color 0.2s;
+    }
+
+    .result-note {
+      font-size: 0.8rem;
+      color: #555;
+      margin-bottom: 1.25rem;
+      min-height: 1.2em;
+    }
+
+    .bar-track {
+      height: 3px;
+      background: #2a2a2e;
+      border-radius: 2px;
+      margin-bottom: 1.1rem;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.25s ease, background-color 0.25s ease;
+      background: #3a3a42;
+      width: 0%;
+    }
+
+    .breakdown {
+      display: flex;
+      gap: 0;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .breakdown-item {
+      flex: 1;
+      padding: 0.65rem 0.9rem;
+    }
+
+    .breakdown-item + .breakdown-item {
+      border-left: 1px solid #2a2a2e;
+    }
+
+    .breakdown-k { font-size: 0.72rem; color: #555; margin-bottom: 0.2rem; }
+    .breakdown-v { font-size: 1rem; font-weight: 600; color: #888; }
+
+    .c-neutral { color: #666 !important; }
+    .c-better  { color: #4ec94e !important; }
+    .c-worse   { color: #e54e4e !important; }
+    .bg-better { background-color: #4ec94e !important; }
+    .bg-worse  { background-color: #e54e4e !important; }
+    .bg-neutral { background-color: #444 !important; }
+
+    .note {
+      font-size: 0.7rem;
+      color: #2e2e36;
+      text-align: center;
+      margin-top: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="/osrs/">← back</a>
+
+    <header>
+      <h1>Cycle Loss Calculator</h1>
+      <p class="subtitle">How much more or less likely you are to lose a cycle by substituting comp swings</p>
+    </header>
+
+    <div class="section">
+      <div class="section-label">Settings</div>
+      <div class="row">
+        <div class="field">
+          <label for="bossHP">Boss HP</label>
+          <input type="number" id="bossHP" value="200" min="1" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Players</div>
+      <p class="player-hint">
+        Avg hit = average damage per swing. Swings needed is calculated from boss HP and base avg hits.
+        Comp swings = how many of those swings use the comp avg hit; the rest use base.
+      </p>
+      <div id="playerList"></div>
+      <button class="btn-add" onclick="addPlayer()">+ Add player</button>
+    </div>
+
+    <div class="result-card">
+      <div class="result-head">Cycle loss delta — comp vs. camping base</div>
+      <div class="result-delta" id="deltaVal">—</div>
+      <div class="result-note" id="deltaNote">&nbsp;</div>
+      <div class="bar-track"><div class="bar-fill" id="deltaBar"></div></div>
+      <div class="breakdown">
+        <div class="breakdown-item">
+          <div class="breakdown-k">Camping base</div>
+          <div class="breakdown-v" id="basePct">—</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-k">With comp swings</div>
+          <div class="breakdown-v" id="compPct">—</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-k">Swings in cycle</div>
+          <div class="breakdown-v" id="swingsInfo">—</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="note">
+      Each swing ~ Uniform[0, 2×avg hit]. Variance sums independently per swing. Normal approximation for total.
+    </p>
+  </div>
+
+  <script>
+    let players = [];
+    let uid = 0;
+
+    function erf(x) {
+      const sign = x >= 0 ? 1 : -1;
+      x = Math.abs(x);
+      const t = 1 / (1 + 0.3275911 * x);
+      const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+      return sign * y;
+    }
+
+    function normCDF(x, mu, sigma) {
+      if (sigma <= 0) return x > mu ? 1 : 0;
+      return 0.5 * (1 + erf((x - mu) / (sigma * Math.SQRT2)));
+    }
+
+    function val(id) {
+      const el = document.getElementById(id);
+      return el ? +el.value || 0 : 0;
+    }
+
+    function calcScenario(scenario) {
+      const bossHP = val('bossHP');
+
+      // Derive swings needed from boss HP and total base avg hit per round
+      let totalBaseAvg = 0;
+      for (const p of players) totalBaseAvg += val(`base_${p.id}`);
+      const N = totalBaseAvg > 0 ? Math.ceil(bossHP / totalBaseAvg) : 1;
+
+      let mu = 0, variance = 0, totalComp = 0;
+
+      for (const p of players) {
+        const baseAvg = val(`base_${p.id}`);
+        const compAvg = val(`comp_${p.id}`);
+        const X = Math.min(N, Math.max(0, Math.round(val(`cswings_${p.id}`))));
+
+        totalComp += X;
+
+        if (scenario === 'base') {
+          mu       += N * baseAvg;
+          variance += N * (baseAvg * baseAvg) / 3;
+        } else {
+          mu       += X * compAvg + (N - X) * baseAvg;
+          variance += X * (compAvg * compAvg) / 3 + (N - X) * (baseAvg * baseAvg) / 3;
+        }
+      }
+
+      const sigma = Math.sqrt(variance);
+      const pct = Math.min(100, Math.max(0, normCDF(bossHP, mu, sigma) * 100));
+
+      return { pct, N, totalComp };
+    }
+
+    function fmt1(n) { return Number.isFinite(n) ? n.toFixed(1) : '—'; }
+
+    function update() {
+      if (players.length === 0) {
+        document.getElementById('deltaVal').textContent = '—';
+        document.getElementById('deltaVal').className = 'result-delta';
+        document.getElementById('deltaNote').innerHTML = '&nbsp;';
+        document.getElementById('deltaBar').style.width = '0%';
+        document.getElementById('deltaBar').className = 'bar-fill';
+        document.getElementById('basePct').textContent = '—';
+        document.getElementById('compPct').textContent = '—';
+        document.getElementById('swingsInfo').textContent = '—';
+        return;
+      }
+
+      const base = calcScenario('base');
+      const comp = calcScenario('comp');
+
+      const delta = comp.pct - base.pct;
+      const absDelta = Math.abs(delta);
+
+      const deltaEl  = document.getElementById('deltaVal');
+      const noteEl   = document.getElementById('deltaNote');
+      const barEl    = document.getElementById('deltaBar');
+
+      if (absDelta < 0.05) {
+        deltaEl.textContent = '0%';
+        deltaEl.className = 'result-delta c-neutral';
+        noteEl.textContent = 'no change from camping base';
+        barEl.style.width = '0%';
+        barEl.className = 'bar-fill bg-neutral';
+      } else if (delta > 0) {
+        deltaEl.textContent = '+' + absDelta.toFixed(1) + '%';
+        deltaEl.className = 'result-delta c-worse';
+        noteEl.textContent = 'more likely to lose the cycle than camping base';
+        barEl.style.width = Math.min(absDelta, 100).toFixed(2) + '%';
+        barEl.className = 'bar-fill bg-worse';
+      } else {
+        deltaEl.textContent = '−' + absDelta.toFixed(1) + '%';
+        deltaEl.className = 'result-delta c-better';
+        noteEl.textContent = 'less likely to lose the cycle than camping base';
+        barEl.style.width = Math.min(absDelta, 100).toFixed(2) + '%';
+        barEl.className = 'bar-fill bg-better';
+      }
+
+      document.getElementById('basePct').textContent = fmt1(base.pct) + '%';
+      document.getElementById('compPct').textContent = fmt1(comp.pct) + '%';
+      document.getElementById('swingsInfo').textContent =
+        comp.totalComp + ' comp / ' + comp.N + ' total';
+    }
+
+    function addPlayer() {
+      const id = uid++;
+      players.push({ id });
+
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.id = `prow_${id}`;
+      row.innerHTML = `
+        <div class="field field-name">
+          <label>Name</label>
+          <input type="text" id="name_${id}" placeholder="Player ${players.length}" />
+        </div>
+        <div class="field field-hit">
+          <label>Base avg hit</label>
+          <input type="number" id="base_${id}" placeholder="0" min="0" step="0.1" />
+        </div>
+        <div class="field field-hit">
+          <label>Comp avg hit</label>
+          <input type="number" id="comp_${id}" placeholder="0" min="0" step="0.1" />
+        </div>
+        <div class="divider"></div>
+        <div class="field field-narrow">
+          <label>Comp swings</label>
+          <input type="number" id="cswings_${id}" value="0" min="0" max="999" step="1" />
+        </div>
+        <button class="btn-remove" onclick="removePlayer(${id})" title="Remove">×</button>
+      `;
+
+      document.getElementById('playerList').appendChild(row);
+
+      ['name', 'base', 'comp', 'cswings'].forEach(k => {
+        document.getElementById(`${k}_${id}`).addEventListener('input', update);
+      });
+
+      update();
+    }
+
+    function removePlayer(id) {
+      players = players.filter(p => p.id !== id);
+      document.getElementById(`prow_${id}`)?.remove();
+      update();
+    }
+
+    document.getElementById('bossHP').addEventListener('input', update);
+
+    addPlayer();
+    addPlayer();
+    addPlayer();
+  </script>
+</body>
+</html>

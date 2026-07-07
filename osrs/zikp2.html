@@ -5,137 +5,244 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verzik P2 — one down, reds</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f0f11;
+            --panel: #16161a;
+            --ink: #e8e8e8;
+            --line: #2a2a2e;
+            --label: #54545e;
+            --accent: #4ec94e;
+            --yellow: #e8b84e;
+            --red: #e54e4e;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
-            padding: 20px;
-            color: #222;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.5;
+            padding: 2rem 1.5rem 4rem;
         }
-        .container {
-            max-width: 900px;
+
+        .wrap {
+            max-width: 680px;
             margin: 0 auto;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
         }
-        .header {
-            background: linear-gradient(135deg, #c0392b 0%, #8e44ad 100%);
-            color: #fff;
-            padding: 28px;
-            text-align: center;
+
+        .back {
+            display: inline-block;
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+            color: #5c5c66;
+            text-decoration: none;
+            transition: color 0.15s;
         }
-        .header h1 { font-size: 1.75em; margin-bottom: 8px; }
-        .header p { opacity: 0.92; font-size: 0.95em; }
-        .content { padding: 28px; }
-        .input-group { margin-bottom: 18px; }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
+        .back:hover { color: #aaa; }
+
+        header { margin-bottom: 1.75rem; }
+
+        h1 {
+            font-size: 1.8rem;
             font-weight: 600;
-            color: #333;
+            letter-spacing: -0.03em;
+            color: #fff;
+            margin-bottom: 0.3rem;
         }
-        .input-group textarea {
+
+        .tagline {
+            font-size: 0.85rem;
+            color: #82828c;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-label {
+            font-size: 0.67rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--label);
+            margin-bottom: 0.9rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field + .field { margin-top: 1.25rem; }
+
+        .field label {
+            font-size: 0.75rem;
+            color: #9a9aa4;
+        }
+
+        .field label code, .hint code {
+            background: var(--bg);
+            border: 1px solid var(--line);
+            color: #c8c8d0;
+            padding: 0.05rem 0.35rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        textarea {
             width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: 'Courier New', monospace;
-            resize: vertical;
-        }
-        .input-group textarea:focus {
+            padding: 0.6rem 0.85rem;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            font-size: 0.82rem;
+            font-family: "SF Mono", "Fira Code", "Consolas", monospace;
             outline: none;
-            border-color: #8e44ad;
+            resize: vertical;
+            transition: border-color 0.15s;
         }
-        .btn {
-            padding: 12px 22px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #c0392b 0%, #8e44ad 100%);
-            color: #fff;
-        }
-        .btn-primary:hover { filter: brightness(1.05); }
-        .btn-secondary { background: #f1f3f5; color: #333; border: 2px solid #dee2e6; }
-        .results-area {
-            margin-top: 22px;
-            display: none;
-        }
-        .results-area .input-group {
-            margin-bottom: 22px;
-        }
+
+        textarea:focus { border-color: #4a4a54; }
+
+        textarea#code { min-height: 100px; }
+
         textarea.output-textarea {
             min-height: 140px;
             max-height: 360px;
-            background: #f8f9fa;
+            color: #c8c8d0;
         }
-        .copy-row {
-            margin-top: 10px;
+
+        ::placeholder { color: #52525c; }
+
+        .hint {
+            font-size: 0.75rem;
+            color: #8a8a94;
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .button-group {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
             flex-wrap: wrap;
         }
+
+        .btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 0.7rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.1s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #08140a;
+        }
+        .btn-primary:hover { background: #5ed65e; transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+        .btn-secondary {
+            background: #202028;
+            color: #dadada;
+            border-color: #36363f;
+        }
+        .btn-secondary:hover { border-color: #5a5a66; background: #2a2a33; color: #fff; }
+
+        .error {
+            background: rgba(229, 78, 78, 0.12);
+            border: 1px solid var(--red);
+            color: #ff8a8a;
+            padding: 0.9rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 0.85rem;
+        }
+
+        .results-area { display: none; }
+
+        .copy-row {
+            margin-top: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+        }
+
         .copy-feedback {
-            font-size: 0.9em;
-            color: #27ae60;
+            font-size: 0.8rem;
+            color: var(--accent);
             font-weight: 600;
             min-height: 1.2em;
         }
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 14px;
-            border-radius: 8px;
-            margin-top: 16px;
-            border-left: 4px solid #c33;
+
+        .credit {
+            text-align: center;
+            color: #5c5c66;
+            font-size: 0.75rem;
+            margin-top: 1.5rem;
         }
-        .hint { font-size: 0.88em; color: #666; margin-top: 8px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="wrap">
+        <a class="back" href="/osrs/">← back</a>
+        <header>
             <h1>Verzik P2 — one down, reds</h1>
-            <p>Kill odds by HP threshold (matches the Python sim)</p>
-        </div>
-        <div class="content">
-            <div class="input-group">
+            <p class="tagline">Kill odds by HP threshold (matches the Python sim)</p>
+        </header>
+
+        <div class="panel">
+            <div class="section-label">Configuration</div>
+
+            <div class="field">
                 <label for="code">Code (fields separated by <code>@</code>)</label>
                 <textarea id="code" spellcheck="false" placeholder="Paste the full @-separated code string…"></textarea>
                 <p class="hint">Player hit strings use <code>~</code> between attacks. Order: five players, then scale, bounce odds, purple, then gear + attack level for each player (×5).</p>
             </div>
+        </div>
+
+        <div class="button-group">
             <button type="button" class="btn btn-primary" id="runBtn">Run simulation</button>
             <button type="button" class="btn btn-secondary" id="clearBtn">Clear output</button>
-            <div id="err" class="error" style="display:none;"></div>
-            <div id="resultsArea" class="results-area">
-                <div class="input-group">
-                    <label for="pythonOut">Input for sheet</label>
+        </div>
+
+        <div id="err" class="error" style="display:none;"></div>
+
+        <div id="resultsArea" class="results-area">
+            <div class="panel">
+                <div class="section-label">Input for sheet</div>
+                <div class="field">
                     <textarea id="pythonOut" class="output-textarea" readonly spellcheck="false" rows="10" aria-label="Simulation output for sheet"></textarea>
                     <div class="copy-row">
-                        <button type="button" class="btn btn-secondary" id="copyPythonBtn">Copy output</button>
+                        <button type="button" class="btn btn-secondary" id="copyPythonBtn" style="flex: 0;">Copy output</button>
                         <span id="copyFeedback" class="copy-feedback" aria-live="polite"></span>
                     </div>
                 </div>
-                <div class="input-group">
-                    <label for="summaryOut">Summary</label>
+            </div>
+            <div class="panel">
+                <div class="section-label">Summary</div>
+                <div class="field">
                     <textarea id="summaryOut" class="output-textarea" readonly spellcheck="false" rows="14" aria-label="Human-readable summary"></textarea>
                 </div>
             </div>
-            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e1e5e9; color: #666; font-size: 0.9em;">
-                Credit to duckwax for the simulation logic
-            </div>
         </div>
+
+        <p class="credit">Credit to duckwax for the simulation logic</p>
     </div>
 
     <script>

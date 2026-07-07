@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nylocas Waves — xarp.us</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f11;
+      color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 3rem 1.5rem;
+    }
+
+    .card {
+      text-align: center;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .logo {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      margin-bottom: 1.2rem;
+      image-rendering: pixelated;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+
+    .tagline {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 0.75rem;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 2rem;
+      font-size: 0.85rem;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .back:hover { color: #aaa; }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    .control-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .control-group label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #6a6a7a;
+      padding-left: 0.1rem;
+    }
+
+    .control-group input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      background: #0f0f11;
+      border: 1px solid #2a2a2e;
+      border-radius: 7px;
+      color: #e8e8e8;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .control-group input:focus { border-color: #4a4a54; }
+    .control-group input::placeholder { color: #3a3a42; }
+
+    .wave-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      text-align: left;
+    }
+
+    /* Wave row */
+    .wave-row {
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .wave-row:hover { border-color: #3a3a44; background: #16161a; }
+    .wave-row.active { border-color: #4ec94e; background: #0d1a0d; }
+
+    .wave-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 1rem;
+    }
+
+    .wave-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .wave-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #555;
+      width: 1.6rem;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .wave-row.active .wave-badge { color: #4ec94e; }
+
+    .wave-label {
+      font-size: 0.88rem;
+      color: #c8c8d0;
+    }
+
+    .wave-row.active .wave-label { color: #e8e8e8; }
+
+    .wave-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .wave-tick {
+      font-size: 0.75rem;
+      color: #3a3a42;
+    }
+
+    .wave-time {
+      font-size: 0.88rem;
+      color: #555;
+      font-variant-numeric: tabular-nums;
+      min-width: 3.5rem;
+      text-align: right;
+    }
+
+    .wave-row.active .wave-time { color: #4ec94e; }
+
+    /* Lane section */
+    .wave-lanes {
+      display: flex;
+      padding: 0.4rem 1rem 0.55rem;
+      border-top: 1px solid #1a1a1e;
+      gap: 0;
+    }
+
+    .wave-row.active .wave-lanes { border-top-color: #1a2e1a; }
+
+    .lane-cell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .lane-cell + .lane-cell {
+      border-left: 1px solid #1a1a1e;
+    }
+
+    .wave-row.active .lane-cell + .lane-cell { border-left-color: #1a2e1a; }
+
+    .lane-name {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #2e2e38;
+    }
+
+    .wave-row.active .lane-name { color: #3a5a3a; }
+
+    /* Nylo chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .chip-empty {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* small = outlined */
+    .chip.melee  { border: 1.5px solid #8a4020; color: #8a4020; }
+    .chip.mage   { border: 1.5px solid #3a5aaa; color: #3a5aaa; }
+    .chip.range  { border: 1.5px solid #2a7a2a; color: #2a7a2a; }
+
+    /* big = filled */
+    .chip.melee.big { background: #e87a2e; border-color: #e87a2e; color: #111; }
+    .chip.mage.big  { background: #4e8ae8; border-color: #4e8ae8; color: #111; }
+    .chip.range.big { background: #4ec94e; border-color: #4ec94e; color: #111; }
+
+    /* brighten small chips when row is active */
+    .wave-row.active .chip.melee  { border-color: #c05a28; color: #c05a28; }
+    .wave-row.active .chip.mage   { border-color: #5878d0; color: #5878d0; }
+    .wave-row.active .chip.range  { border-color: #3aaa3a; color: #3aaa3a; }
+
+    /* Stall separator */
+    .stall-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 0.25rem;
+    }
+
+    .stall-line {
+      flex: 1;
+      height: 1px;
+      background: #1e1e24;
+    }
+
+    .stall-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #2a2a32;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="https://oldschool.runescape.wiki/images/Xarpus.png?a39b0" alt="Xarpus" />
+    <h1>xarp.us</h1>
+    <p class="tagline">nylocas waves</p>
+    <a class="back" href="/resources/">← back</a>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>Wave</label>
+        <input type="number" id="wave-input" min="1" max="31" placeholder="1 – 31">
+      </div>
+      <div class="control-group">
+        <label>Timestamp</label>
+        <input type="text" id="time-input" placeholder="0:00.0">
+      </div>
+    </div>
+
+    <div class="wave-list" id="wave-list"></div>
+  </div>
+  <script>
+    const STEPS = [
+      { wave: null },
+      { wave: 1,  lanes: ["melee", "",   "mage", "",   "range", ""    ] },
+      { wave: 2,  lanes: ["range", "",   "melee","",   "mage",  ""    ] },
+      { wave: 3,  lanes: ["mage",  "",   "range","",   "melee", ""    ] },
+      { wave: 4,  lanes: ["melee", "",   "MAGE", "",   "range", ""    ] },
+      { wave: 5,  lanes: ["mage",  "",   "melee","",   "RANGE", ""    ] },
+      { wave: null }, { wave: null }, { wave: null },
+      { wave: 6,  lanes: ["MELEE", "",   "range","",   "mage",  ""    ] },
+      { wave: 7,  lanes: ["melee", "",   "mage", "RANGE", "",   ""    ] },
+      { wave: null }, { wave: null },
+      { wave: 8,  lanes: ["range", "",   "melee","",   "MAGE",  ""    ] },
+      { wave: 9,  lanes: ["mage",  "",   "",     "",   "melee", "RANGE"] },
+      { wave: null },
+      { wave: 10, lanes: ["range", "RANGE","range","range","range","range"] },
+      { wave: null },
+      { wave: 11, lanes: ["mage",  "mage","mage","mage","MAGE","" ] },
+      { wave: null },
+      { wave: 12, lanes: ["melee", "melee","MELEE","","melee","melee"] },
+      { wave: null },
+      { wave: 13, lanes: ["melee", "",   "range","melee","mage","range"] },
+      { wave: null },
+      { wave: 14, lanes: ["RANGE", "",   "mage", "range","melee","mage"] },
+      { wave: null },
+      { wave: 15, lanes: ["mage",  "range","MAGE","",   "range","melee"] },
+      { wave: null },
+      { wave: 16, lanes: ["mage-melee-range","","melee-mage-range","","range-mage-range",""] },
+      { wave: 17, lanes: ["MAGE-MELEE-MAGE","","MAGE-MELEE-MAGE","","MAGE-MELEE-MAGE",""] },
+      { wave: null }, { wave: null },
+      { wave: 18, lanes: ["RANGE-MAGE-RANGE","","RANGE-MAGE-RANGE","","RANGE-MAGE-RANGE",""] },
+      { wave: null },
+      { wave: 19, lanes: ["MAGE-MELEE-MAGE","","MAGE-MELEE-MAGE","","MAGE-MELEE-MAGE",""] },
+      { wave: null }, { wave: null },
+      { wave: 20, lanes: ["MELEE-RANGE-MELEE","","MAGE-RANGE-MELEE","","MELEE-RANGE-MELEE",""] },
+      { wave: null }, { wave: null }, { wave: null },
+      { wave: 21, lanes: ["range-melee-range","range-melee-range","melee-mage-melee","melee-range-melee","mage-melee-range","mage-range-mage"] },
+      { wave: null },
+      { wave: 22, lanes: ["MAGE-RANGE-MELEE","","range-mage-melee","mage-range-melee","MELEE-RANGE-MELEE",""] },
+      { wave: null }, { wave: null },
+      { wave: 23, lanes: ["MAGE-RANGE-MELEE","","RANGE-MAGE-MELEE","","range-mage-range","mage-range-melee"] },
+      { wave: null },
+      { wave: 24, lanes: ["MELEE","","MAGE","","RANGE-MAGE-MELEE",""] },
+      { wave: null },
+      { wave: 25, lanes: ["MAGE-MELEE-MAGE","","RANGE","","MELEE",""] },
+      { wave: null },
+      { wave: 26, lanes: ["MAGE","","MELEE-MAGE-MELEE","","MAGE",""] },
+      { wave: 27, lanes: ["MAGE-MELEE-MAGE","","MELEE-MAGE-RANGE","","MAGE",""] },
+      { wave: null },
+      { wave: 28, lanes: ["mage-melee-range","range-mage-melee","melee-range-melee","mage-melee-range","range-melee-range","melee-mage-melee"] },
+      { wave: 29, lanes: ["mage-range-melee","range-melee-mage","MELEE","","range-melee-range","melee-range-mage"] },
+      { wave: 30, lanes: ["MAGE","","melee-range-melee","mage-range-melee","RANGE-MELEE-RANGE",""] },
+      { wave: 31, lanes: ["mage-range-mage","range-melee-range","melee-mage-range","mage-melee-range","range-mage-range","melee-range-mage"] },
+    ];
+
+    const TICK = 0.6;
+    // each side has two sub-lanes: [EN,ES], [SE,SW], [WS,WN]
+    const SIDE_INDICES = [[0, 1], [2, 3], [4, 5]];
+    const SIDE_LABELS  = ['E', 'S', 'W'];
+
+    // letter + class for each nylo type
+    const TYPE_META = {
+      melee: { letter: 'M' },
+      mage:  { letter: 'G' },
+      range: { letter: 'R' },
+    };
+
+    function parseEntry(raw) {
+      if (!raw) return null;
+      const token = raw.split('-')[0]; // take first part of trio
+      const isBig = token === token.toUpperCase();
+      const type  = token.toLowerCase();
+      return TYPE_META[type] ? { type, isBig } : null;
+    }
+
+    function renderChip(raw) {
+      const parsed = parseEntry(raw);
+      if (!parsed) return '<div class="chip-empty"></div>';
+      const { type, isBig } = parsed;
+      const { letter } = TYPE_META[type];
+      return `<div class="chip ${type}${isBig ? ' big' : ''}">${letter}</div>`;
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = (seconds % 60).toFixed(1).padStart(4, '0');
+      return `${m}:${s}`;
+    }
+
+    function parseTime(str) {
+      const m = str.match(/^(\d+):(\d+(?:\.\d+)?)$/);
+      if (m) return parseInt(m[1]) * 60 + parseFloat(m[2]);
+      const n = parseFloat(str);
+      return isNaN(n) ? null : n;
+    }
+
+    // Build render items — group consecutive nulls into a single stall
+    const items  = [];
+    const waveMap = {}; // wave number → tick
+    let stallTicks = 0;
+
+    STEPS.forEach((step, i) => {
+      const tick = i * 4;
+      if (step.wave === null) {
+        stallTicks += 4;
+      } else {
+        if (stallTicks > 0) {
+          items.push({ type: 'stall', ticks: stallTicks });
+          stallTicks = 0;
+        }
+        waveMap[step.wave] = tick;
+        items.push({ type: 'wave', wave: step.wave, tick, lanes: step.lanes || [] });
+      }
+    });
+    if (stallTicks > 0) items.push({ type: 'stall', ticks: stallTicks });
+
+    const waves = items.filter(i => i.type === 'wave');
+
+    // Render
+    const list = document.getElementById('wave-list');
+
+    items.forEach(item => {
+      if (item.type === 'stall') {
+        const div = document.createElement('div');
+        div.className = 'stall-row';
+        div.innerHTML = `
+          <div class="stall-line"></div>
+          <span class="stall-label">Natural Stall — ${item.ticks}t (${(item.ticks * TICK).toFixed(1)}s)</span>
+          <div class="stall-line"></div>
+        `;
+        list.appendChild(div);
+        return;
+      }
+
+      const { wave, tick, lanes } = item;
+      const seconds = tick * TICK;
+
+      const lanesHTML = SIDE_INDICES.map(([a, b], si) =>
+        `<div class="lane-cell">
+          <span class="lane-name">${SIDE_LABELS[si]}</span>
+          <div style="display:flex;gap:2px;">
+            ${renderChip(lanes[a])}${renderChip(lanes[b])}
+          </div>
+        </div>`
+      ).join('');
+
+      const row = document.createElement('div');
+      row.className = 'wave-row';
+      row.id = `wave-${wave}`;
+      row.onclick = () => {
+        document.getElementById('wave-input').value = wave;
+        jumpToWave(wave);
+      };
+      row.innerHTML = `
+        <div class="wave-header">
+          <div class="wave-left">
+            <span class="wave-badge">${wave}</span>
+            <span class="wave-label">Wave ${wave}</span>
+          </div>
+          <div class="wave-right">
+            <span class="wave-tick">t${tick}</span>
+            <span class="wave-time">${formatTime(seconds)}</span>
+          </div>
+        </div>
+        <div class="wave-lanes">${lanesHTML}</div>
+      `;
+      list.appendChild(row);
+    });
+
+    function jumpToWave(n) {
+      document.querySelectorAll('.wave-row.active').forEach(el => el.classList.remove('active'));
+      const el = document.getElementById(`wave-${n}`);
+      if (el) {
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function snapAndJump(input) {
+      const s = parseTime(input.value);
+      if (s === null) return;
+      const snappedTick    = Math.floor(s / TICK);
+      const snappedSeconds = snappedTick * TICK;
+      input.value = formatTime(snappedSeconds);
+      let target = waves[0];
+      for (const w of waves) {
+        if (w.tick <= snappedTick) target = w;
+      }
+      jumpToWave(target.wave);
+    }
+
+    document.getElementById('wave-input').addEventListener('input', function () {
+      const n = parseInt(this.value);
+      if (n >= 1 && n <= 31) jumpToWave(n);
+    });
+
+    const timeInput = document.getElementById('time-input');
+    timeInput.addEventListener('blur',    function () { snapAndJump(this); });
+    timeInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') this.blur(); });
+  </script>
+</body>
+</html>
