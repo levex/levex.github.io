@@ -142,6 +142,16 @@
 
     .check-item:last-child { border-bottom: none; }
 
+    .fundamental-label {
+      padding: 0.65rem 1.25rem 0.4rem;
+      border-bottom: 1px solid #1e1e22;
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3a3a42;
+    }
+
     .check-row {
       display: flex;
       align-items: center;
@@ -432,7 +442,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'tob-checklist-v1';
+    const STORAGE_KEY = 'tob-checklist-v2';
 
     const WIKI = 'https://oldschool.runescape.wiki';
 
@@ -444,10 +454,11 @@
         icon: `${WIKI}/w/Special:FilePath/The_Maiden_of_Sugadinti.png`,
         wikiUrl: `${WIKI}/w/The_Maiden_of_Sugadinti`,
         items: [
-          'Proper spec procedure',
-          'Not getting drained',
-          'Not missing hits',
-          'Stacking',
+          { tier: 'Major Fundamental', label: 'Proper spec procedure' },
+          { tier: 'Major Fundamental', label: 'Stalling venges/bowing from correct tile for proper spawns' },
+          { tier: 'Major Fundamental', label: 'Not missing hits & staying on tick' },
+          { tier: 'Major Fundamental', label: 'Proper stack & skip procedure' },
+          { tier: 'Minor Fundamental', label: 'Not getting drained' },
         ],
       },
       {
@@ -457,10 +468,11 @@
         icon: `${WIKI}/w/Special:FilePath/Pestilent_Bloat.png`,
         wikiUrl: `${WIKI}/w/Pestilent_Bloat`,
         items: [
-          'Proper spec procedure',
-          '1D procedure',
-          'Tick eating',
-          'Not Dying',
+          { tier: 'Major Fundamental', label: 'Not flying teammates unnecessarily' },
+          { tier: 'Major Fundamental', label: 'Tick eating' },
+          { tier: 'Major Fundamental', label: 'Not Dying' },
+          { tier: 'Minor Fundamental', label: 'Proper spec procedure' },
+          { tier: 'Minor Fundamental', label: '1d procedure' },
         ],
       },
       {
@@ -470,9 +482,10 @@
         icon: 'https://oldschool.runescape.wiki/images/thumb/Nylocas_Vasilias_%28melee%29.png/500px-Nylocas_Vasilias_%28melee%29.png?52075',
         wikiUrl: `${WIKI}/w/Nylocas_Vasilias`,
         items: [
-          'Proper spec procedure',
-          'Fundamental understanding of your rotation',
-          'Good clean-up (VOD REVIEW)',
+          { tier: 'Minor Fundamental', label: 'Proper spec procedure' },
+          { tier: 'Minor Fundamental', label: 'Fundamental understanding of your rotation' },
+          { tier: 'Minor Fundamental', label: 'Good clean-up (VOD REVIEW)' },
+          { tier: 'Minor Fundamental', label: 'Properly cross praying & cross switching' },
         ],
       },
       {
@@ -482,11 +495,11 @@
         icon: `${WIKI}/w/Special:FilePath/Sotetseg.png`,
         wikiUrl: `${WIKI}/w/Sotetseg`,
         items: [
-          'Proper spec procedure',
-          'Back-up in time',
-          'Running maze with minimal tickloss',
-          'Off on 3',
-          'Venge Usage (venging on CD & Taking venges)',
+          { tier: 'Major Fundamental', label: 'Running maze correctly with minimal tickloss' },
+          { tier: 'Major Fundamental', label: 'Off on 3' },
+          { tier: 'Minor Fundamental', label: 'Proper spec procedure' },
+          { tier: 'Minor Fundamental', label: 'Back-up in time' },
+          { tier: 'Minor Fundamental', label: 'Venge Usage (venging on CD & Taking venges)' },
         ],
       },
       {
@@ -496,9 +509,10 @@
         icon: 'https://oldschool.runescape.wiki/images/thumb/Xarpus.png/600px-Xarpus.png?a39b0',
         wikiUrl: `${WIKI}/w/Xarpus`,
         items: [
-          'EXHUMED procedure',
-          '5 ticking',
-          '22121',
+          { tier: 'Major Fundamental', label: '5 ticking' },
+          { tier: 'Minor Fundamental', label: 'Exhumed procedure' },
+          { tier: 'Minor Fundamental', label: 'Proper spec procedure' },
+          { tier: 'Minor Fundamental', label: '22121' },
         ],
       },
       {
@@ -508,12 +522,12 @@
         icon: 'https://oldschool.runescape.wiki/images/Verzik_Vitur_%28final_form%29.png?f9733',
         wikiUrl: `${WIKI}/w/Verzik_Vitur`,
         items: [
-          'Be able to read and execute a Verzik P1 chart',
-          'P2 Boak',
-          'P2 Not missing unnecessary ticks',
-          'Bouncetech/Red Skip',
-          'Proper tanking (no Melees)',
-          'P3 Boak',
+          { tier: 'Major Fundamental', label: 'Be Able to read and execute a Verzik P1 chart' },
+          { tier: 'Major Fundamental', label: 'P2 Boak' },
+          { tier: 'Major Fundamental', label: 'Proper tanking (no Melees)' },
+          { tier: 'Major Fundamental', label: 'P3 Boak' },
+          { tier: 'Minor Fundamental', label: 'P2 Not missing unnecessary ticks' },
+          { tier: 'Minor Fundamental', label: '1d reds procedure' },
         ],
       },
       {
@@ -523,7 +537,7 @@
         icon: null,
         wikiUrl: null,
         items: [
-          'Hitting on 118 the entire raid and knowing how to brew → SCB',
+          { tier: 'Minor Fundamental', label: 'Hitting on 118 the entire raid and knowing how to brew → SCB' },
         ],
       },
     ];
@@ -613,7 +627,15 @@
         header.innerHTML = dotHtml + iconHtml + nameHtml;
         section.appendChild(header);
 
+        let currentTier = null;
         boss.items.forEach((item, idx) => {
+          if (item.tier !== currentTier) {
+            currentTier = item.tier;
+            const tierLabel = document.createElement('div');
+            tierLabel.className = 'fundamental-label';
+            tierLabel.textContent = currentTier;
+            section.appendChild(tierLabel);
+          }
           section.appendChild(buildItem(boss, idx, item));
         });
 
@@ -632,7 +654,7 @@
       }
     }
 
-    function buildItem(boss, idx, label) {
+    function buildItem(boss, idx, item) {
       const itemEl = document.createElement('div');
       itemEl.className = 'check-item';
       itemEl.id = `item-${boss.id}-${idx}`;
@@ -642,7 +664,7 @@
 
       const lbl = document.createElement('div');
       lbl.className = 'check-label';
-      lbl.textContent = label;
+      lbl.textContent = item.label;
 
       row.appendChild(lbl);
       row.appendChild(makeRaidGroup(boss.id, idx, 'r1', 'R1'));
@@ -768,11 +790,16 @@
 
       for (const boss of BOSSES) {
         lines.push(`### ${boss.name}`);
+        let currentTier = null;
         boss.items.forEach((item, idx) => {
+          if (item.tier !== currentTier) {
+            currentTier = item.tier;
+            lines.push(`**${currentTier}**`);
+          }
           const { r1, r2, notes } = state[boss.id][idx];
           const eff1 = r1 === 'N/A' ? null : r1, eff2 = r2 === 'N/A' ? null : r2;
           const status = (!eff1 && !eff2) ? 'N/A' : (!eff2 ? eff1 : (!eff1 ? eff2 : (eff1 === eff2 ? eff1 : `${eff1}/${eff2}`)));
-          lines.push(`${item}, ${status}`);
+          lines.push(`${item.label}, ${status}`);
           notes.forEach(n => { if (n.trim()) lines.push(`- ${n.trim()}`); });
         });
         const rn = (roomNotes[boss.id] || '').trim();
