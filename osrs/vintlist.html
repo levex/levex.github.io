@@ -793,8 +793,10 @@
         let currentTier = null;
         boss.items.forEach((item, idx) => {
           if (item.tier !== currentTier) {
+            if (currentTier !== null) lines.push('');
             currentTier = item.tier;
             lines.push(`**${currentTier}**`);
+            lines.push('');
           }
           const { r1, r2, notes } = state[boss.id][idx];
           const eff1 = r1 === 'N/A' ? null : r1, eff2 = r2 === 'N/A' ? null : r2;

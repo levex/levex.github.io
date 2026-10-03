@@ -87,6 +87,22 @@
             color: #9a9aa4;
         }
 
+        .field label.checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: #c8c8d0;
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
         .field label code, .hint code {
             background: var(--bg);
             border: 1px solid var(--line);
@@ -213,6 +229,13 @@
                 <label for="code">Code (fields separated by <code>@</code>)</label>
                 <textarea id="code" spellcheck="false" placeholder="Paste the full @-separated code string…"></textarea>
                 <p class="hint">Player hit strings use <code>~</code> between attacks. Order: five players, then scale, bounce odds, purple, then gear + attack level for each player (×5).</p>
+            </div>
+
+            <div class="field">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="useZeal" checked>
+                    Use Zeal (off = Piety)
+                </label>
             </div>
         </div>
 
@@ -342,8 +365,8 @@
         const t = state.team[player];
         const weaponStr = 75;
         const weaponAcc = 125;
-        let maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
-        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        let maxHit = Math.floor(0.5 + (PRAYER.effStr + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * PRAYER.att) + 0 + 8;
         let accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
         const defRoll = SLASH_DEF_ROLL;
         let hit = 0;
@@ -361,8 +384,8 @@
         const t = state.team[player];
         const weaponStr = 56;
         const weaponAcc = 57;
-        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
-        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const maxHit = Math.floor(0.5 + (PRAYER.effStr + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * PRAYER.att) + 0 + 8;
         const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
         const defRoll = SLASH_DEF_ROLL;
         let hit = 0;
@@ -403,8 +426,8 @@
         const t = state.team[player];
         const weaponStr = 32;
         const weaponAcc = 54;
-        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
-        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const maxHit = Math.floor(0.5 + (PRAYER.effStr + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * PRAYER.att) + 0 + 8;
         const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
         const defRoll = SLASH_DEF_ROLL;
         let hit = 0;
@@ -457,8 +480,8 @@
         const t = state.team[player];
         const weaponStr = 118;
         const weaponAcc = 110;
-        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
-        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const maxHit = Math.floor(0.5 + (PRAYER.effStr + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * PRAYER.att) + 0 + 8;
         const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
         const defRoll = SLASH_DEF_ROLL;
         let hit = 0;
@@ -482,8 +505,8 @@
         const t = state.team[player];
         const weaponStr = 142;
         const weaponAcc = 132;
-        const maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
-        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const maxHit = Math.floor(0.5 + (PRAYER.effStr + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        const effAttack = Math.floor(t.att_lvl * PRAYER.att) + 0 + 8;
         const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
         const defRoll = SLASH_DEF_ROLL;
         let hit = 0;
@@ -497,9 +520,9 @@
         const t = state.team[player];
         const weaponStr = 75;
         const weaponAcc = 40;
-        let maxHit = Math.floor(0.5 + (153 + 3) * ((t.str_bns + weaponStr + 64) / 640));
+        let maxHit = Math.floor(0.5 + (PRAYER.effStr + 3) * ((t.str_bns + weaponStr + 64) / 640));
         maxHit = Math.floor(maxHit * 0.85);
-        const effAttack = Math.floor(t.att_lvl * 1.2) + 0 + 8;
+        const effAttack = Math.floor(t.att_lvl * PRAYER.att) + 0 + 8;
         const accuracy = Math.floor(effAttack * (t.acc_bns + weaponAcc + 64));
         const defRoll = SLASH_DEF_ROLL;
         let hit = 0;
@@ -742,8 +765,16 @@
         }
     }
 
+    // effStr: floor(118 * str multiplier) + 8, 118 = 99 Strength + super combat boost
+    const PRAYERS = {
+        piety: { att: 1.2, effStr: Math.floor(118 * 1.23) + 8 },
+        zeal: { att: 1.25, effStr: Math.floor(118 * 1.28) + 8 }
+    };
+    let PRAYER = PRAYERS.zeal;
+
     function run() {
         errEl.style.display = 'none';
+        PRAYER = document.getElementById('useZeal').checked ? PRAYERS.zeal : PRAYERS.piety;
         const raw = codeEl.value;
         if (!raw.trim()) {
             showError('Paste a code string first.');

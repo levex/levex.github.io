@@ -317,6 +317,13 @@
 
             <div class="field">
                 <label class="checkbox-row">
+                    <input type="checkbox" id="useZeal" checked>
+                    Use Zeal (off = Piety)
+                </label>
+            </div>
+
+            <div class="field">
+                <label class="checkbox-row">
                     <input type="checkbox" id="showAdvanced" onchange="toggleAdvancedOptions()">
                     Show Advanced Options
                 </label>
@@ -410,7 +417,7 @@
 
             maxHit(player, weapon, teamStats, rings) {
                 const weaponBns = this.weapons[weapon].str;
-                const effStr = Math.floor(Math.floor(teamStats[player] * 1.23) + 11);
+                const effStr = Math.floor(Math.floor(teamStats[player] * PRAYER.str) + 11);
                 const ringBonus = rings && rings[player] ? parseInt(rings[player]) : 0;
                 const totalBns = (57 + 64 + weaponBns + ringBonus) / 640;
                 return Math.floor(0.5 + (effStr * totalBns));
@@ -418,7 +425,7 @@
 
             accRoll(player, weapon, teamStats) {
                 const weaponBns = this.weapons[weapon].atk;
-                const effAcc = Math.floor(Math.floor(teamStats[player] * 1.2) + 8);
+                const effAcc = Math.floor(Math.floor(teamStats[player] * PRAYER.att) + 8);
                 const totalBns = 47 + 64 + weaponBns;
                 return effAcc * totalBns;
             }
@@ -661,7 +668,14 @@
             }
         }
 
+        const PRAYERS = {
+            piety: { att: 1.2, str: 1.23 },
+            zeal: { att: 1.25, str: 1.28 }
+        };
+        let PRAYER = PRAYERS.zeal;
+
         function runSimulation() {
+            PRAYER = document.getElementById('useZeal').checked ? PRAYERS.zeal : PRAYERS.piety;
             const fullCode = document.getElementById('fullCode').value.trim();
             const thrallCount = parseInt(document.getElementById('thrallCount').value);
             const simCount = parseInt(document.getElementById('simCount').value);
