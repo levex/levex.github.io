@@ -88,6 +88,22 @@
             color: #9a9aa4;
         }
 
+        .field label.checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: #c8c8d0;
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
         .input-row {
             display: flex;
             gap: 0.75rem;
@@ -276,6 +292,13 @@
                     <input type="number" id="simCount" value="25000" min="1000" max="100000">
                 </div>
             </div>
+
+            <div class="field" style="margin-top: 1rem;">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="useZeal" checked>
+                    Use Zeal (off = Piety)
+                </label>
+            </div>
         </div>
 
         <div class="button-group">
@@ -300,24 +323,56 @@
         const MIN_WALK_DEFAULT = 39;
         const MAX_WALK_DEFAULT = 100;
 
+        // Melee: 118 Attack/Strength, aggressive style. Torva full helm, Oathplate chest + legs,
+        // Ferocious gloves, Infernal cape, Ultor ring, Avernic treads (max) = +53 slash, +54 strength.
+        // Salve amulet(e) (+20% vs undead) on everything except pneck (Phoenix necklace, no bonuses).
+        const PRAYERS = {
+            piety: { att: 1.2, str: 1.23 },
+            zeal: { att: 1.25, str: 1.28 }
+        };
+        const GEAR_SLASH = 53;
+        const GEAR_STR = 54;
+        const SALVE = 1.2;
+        const STYLES = {
+            accurate: { att: 3, str: 0 },
+            aggressive: { att: 0, str: 3 }
+        };
+
+        function meleeRolls(prayer, style, weaponSlash, weaponStr, salve) {
+            const effAtt = Math.floor(118 * prayer.att) + style.att + 8;
+            const effStr = Math.floor(118 * prayer.str) + style.str + 8;
+            let max = Math.floor(0.5 + effStr * (weaponStr + GEAR_STR + 64) / 640);
+            let acc = effAtt * (weaponSlash + GEAR_SLASH + 64);
+            if (salve) {
+                max = Math.floor(max * SALVE);
+                acc = Math.floor(acc * SALVE);
+            }
+            return { max, acc };
+        }
+
         class Rolls {
-            constructor() {
-                this.bgs_max = 88;
-                this.bgs_acc = 89042;
-                this.scythe_max = 55;
-                this.scythe_acc = 44140;
-                this.pneck_max = 46;
-                this.pneck_acc = 36784;
+            constructor(prayer) {
+                const bgs = meleeRolls(prayer, STYLES.aggressive, 132, 132, true);
+                this.bgs_max = Math.floor(Math.floor(bgs.max * 1.1) * 1.1); // Warstrike: +21% damage
+                this.bgs_acc = bgs.acc * 2; // Warstrike: double accuracy
+                const scythe = meleeRolls(prayer, STYLES.aggressive, 125, 75, true);
+                this.scythe_max = scythe.max;
+                this.scythe_acc = scythe.acc;
+                const pneck = meleeRolls(prayer, STYLES.aggressive, 125, 75, false);
+                this.pneck_max = pneck.max;
+                this.pneck_acc = pneck.acc;
                 this.bolt_max = 51;
                 this.bolt_acc = 33285; // Bolt rag not spec
-                this.claw_max = 50;
-                this.claw_acc = 31737;
-                this.chally_max = 75;
-                this.chally_acc = 40587;
+                const claw = meleeRolls(prayer, STYLES.aggressive, 57, 56, true);
+                this.claw_max = claw.max;
+                this.claw_acc = claw.acc;
+                const chally = meleeRolls(prayer, STYLES.aggressive, 110, 118, true); // crystal halberd
+                this.chally_max = Math.floor(chally.max * 1.1); // Sweep: +10% damage
+                this.chally_acc = chally.acc;
             }
         }
 
-        const loadout = new Rolls();
+        let loadout = new Rolls(PRAYERS.zeal);
 
         function accCheck(accuracy, defenceRoll) {
             return Math.floor(Math.random() * (accuracy + 1)) > Math.floor(Math.random() * (defenceRoll + 1));
@@ -769,6 +824,7 @@
         }
 
         function runSimulation() {
+            loadout = new Rolls(document.getElementById('useZeal').checked ? PRAYERS.zeal : PRAYERS.piety);
             const fullCode = document.getElementById('fullCode').value.trim();
             const minWalk = parseInt(document.getElementById('minWalk').value);
             const maxWalk = parseInt(document.getElementById('maxWalk').value);
